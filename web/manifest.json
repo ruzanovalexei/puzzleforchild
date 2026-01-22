@@ -1,6 +1,6 @@
 {
-    "name": "puzzleforchild",
-    "short_name": "puzzleforchild",
+    "name": "mypuzzle",
+    "short_name": "mypuzzle",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
