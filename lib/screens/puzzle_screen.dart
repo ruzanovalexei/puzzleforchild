@@ -4,9 +4,11 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'dart:typed_data';
+// Вспомогательные классы PuzzlePiece, _ImagePiecePainter, ImagePiece, GridPainter должны быть здесь
+// в таком же порядке, как я предоставил их в предыдущем сообщении, сверху.
 
 // ===================================
-// Вспомогательные классы (без изменений)
+// Вспомогательные классы (должны быть здесь)
 // ===================================
 
 // Класс для представления кусочка пазла
@@ -121,12 +123,14 @@ class GridPainter extends CustomPainter {
   }
 }
 
+
 // ===================================
 // Основной виджет экрана пазла
 // ===================================
 
 class PuzzleScreen extends StatefulWidget {
-  const PuzzleScreen({super.key});
+  final String imageAssetPath; // Новый параметр
+  const PuzzleScreen({super.key, required this.imageAssetPath}); // Обновленный конструктор
 
   @override
   _PuzzleScreenState createState() => _PuzzleScreenState();
@@ -143,7 +147,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
   int _score = 0;
   bool _isGameComplete = false;
   bool _isLoading = true;
-  String _currentImageAsset = ''; // Для хранения текущего случайного имени файла
+  // String _currentImageAsset = ''; // Больше не нужен, путь приходит через виджет
 
   int rows = 4;
   int cols = 4;
@@ -155,7 +159,6 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
   @override
   void initState() {
     super.initState();
-    _currentImageAsset = _getRandomImageAsset(); // Генерируем случайное изображение при старте
     _loadImageAndSplit();
   }
 
@@ -163,13 +166,6 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
   void dispose() {
     _timer?.cancel();
     super.dispose();
-  }
-
-  // Новый метод для получения случайного имени файла
-  String _getRandomImageAsset() {
-    final random = Random();
-    final int imageNumber = random.nextInt(14) + 1; // Число от 1 до 4
-    return 'assets/images/fon$imageNumber.webp';
   }
 
   Future<void> _loadImageAndSplit() async {
@@ -182,8 +178,8 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
       _isGameComplete = false;
     });
 
-    // Загружаем изображение по текущему случайному пути
-    final ByteData data = await rootBundle.load(_currentImageAsset);
+    // Загружаем изображение по пути, переданному через виджет
+    final ByteData data = await rootBundle.load(widget.imageAssetPath);
     _image = await decodeImageFromList(data.buffer.asUint8List());
 
     if (_image != null) {
@@ -240,10 +236,6 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
 
   void _checkGameCompletion() {
     if (_placedPiecesPositions.length == _allPieces.length && !_isGameComplete) {
-      // Здесь мы должны проверить, что все placedPiecesPositions соответствуют их correctRelativePosition.
-      // Так как мы добавляем в _placedPiecesPositions только при "прилипании",
-      // можно считать, что они уже "правильно расположены" в рамках threshold.
-      // Но если нужна строгая проверка, то нужно пересчитать.
       bool allPiecesAreCorrectlyPositioned = true;
       for (var entry in _placedPiecesPositions.entries) {
         final pieceId = entry.key;
@@ -303,8 +295,9 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
       _score = 0;
       _isGameComplete = false;
       _isLoading = true;
-      _currentImageAsset = _getRandomImageAsset(); // Генерируем новое случайное изображение
+      // _currentImageAsset = _getRandomImageAsset(); // Удаляем
     });
+    // Просто перезапустим с тем же изображением, которое было выбрано
     _loadImageAndSplit();
   }
 
@@ -324,17 +317,14 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
 
     final Offset localDropPositionOnPuzzleBoard = globalDropPosition - globalPuzzleBoardOrigin;
 
-    // Вычисляем правильную абсолютную позицию на доске пазла
     final Offset correctAbsolutePositionOnBoard = Offset(
       currentPiece.correctRelativePosition.dx * actualPuzzleBoardSize.width,
       currentPiece.correctRelativePosition.dy * actualPuzzleBoardSize.height,
     );
 
-    // Определяем размер одного кусочка на доске
     final double pieceWidth = actualPuzzleBoardSize.width / cols;
     final double pieceHeight = actualPuzzleBoardSize.height / rows;
 
-    // Вычисляем расстояние от центра брошенного Draggable до центра правильного места
     final Offset droppedPieceCenter = Offset(
       localDropPositionOnPuzzleBoard.dx + (pieceWidth / 2),
       localDropPositionOnPuzzleBoard.dy + (pieceHeight / 2),
@@ -352,7 +342,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
     print('[_onPiecePlaced] correctAbsolutePositionOnBoard (top-left): $correctAbsolutePositionOnBoard');
     print('[_onPiecePlaced] Dropped Piece Center: $droppedPieceCenter');
     print('[_onPiecePlaced] Correct Position Center: $correctPositionCenter');
-    print('[_onPiecePlaced] Rendered Piece Size: ${pieceWidth}x${pieceHeight}');
+    print('[_onPiecePlaced] Rendered Piece Size: ${pieceWidth}x$pieceHeight');
     print('[_onPiecePlaced] Puzzle Board Size: $actualPuzzleBoardSize');
     print('[_onPiecePlaced] Distance: $distance, Threshold: $threshold');
 
@@ -380,17 +370,14 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
   @override
   Widget build(BuildContext context) {
     if (_image == null && !_isLoading) {
-      // Если изображение еще не загружено, показываем индикатор загрузки
-      // и запускаем загрузку, когда BuildContext доступен для MediaQuery
       _loadImageAndSplit();
       return const Center(child: CircularProgressIndicator());
     }
 
-    // Расчет размеров центрального пазла и кусочков
     final double screenWidth = MediaQuery.of(context).size.width;
     final double screenHeight = MediaQuery.of(context).size.height;
     final double maxPuzzleBoardWidth = screenWidth * 0.95;
-    final double maxPuzzleBoardHeight = (screenHeight - kToolbarHeight - _activePiecesTrayHeight - (MediaQuery.of(context).padding.top)) * 0.95; // Учитываем AppBar и нижний трей
+    final double maxPuzzleBoardHeight = (screenHeight - kToolbarHeight - _activePiecesTrayHeight - (MediaQuery.of(context).padding.top)) * 0.95;
 
     double candidatePieceSide = min(maxPuzzleBoardWidth / cols, maxPuzzleBoardHeight / rows);
     final Size actualPieceRenderSize = Size.square(max(50.0, candidatePieceSide));
@@ -499,7 +486,6 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: _activePiecesIds.map((pieceId) {
                             PuzzlePiece piece = _allPieces.firstWhere((p) => p.id == pieceId);
-                            // Здесь ImagePiece всегда будет отрисован с actualPieceRenderSize
                             return Expanded(
                               child: Center(
                                 child: Padding(
@@ -521,10 +507,10 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                 ),
               ],
             ),
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: _resetGame,
-      //   child: const Icon(Icons.refresh),
-      // ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _resetGame,
+        child: const Icon(Icons.refresh),
+      ),
     );
   }
 }

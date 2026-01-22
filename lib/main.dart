@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:My_new_puzzle/screens/puzzle_screen.dart';
+import 'package:puzzleforchild/screens/home_screen.dart'; // Предположим, ProjectName - это название вашего проекта в pubspec.yaml
 
 void main() {
-  runApp(const PuzzleApp());
+  runApp(const MyApp());
 }
 
-class PuzzleApp extends StatelessWidget {
-  const PuzzleApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Детский пазл',
+      title: 'Детский Пазл',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const PuzzleScreen(),
+      home: const HomeScreen(), // Запускаем домашний экран
     );
   }
 }

@@ -1,4 +1,4 @@
-name: My_new_puzzle
+name: puzzleforchild
 description: Детский пазл с фигурами ключ-замок
 version: 1.0.0
 publish_to: 'none'
@@ -17,5 +17,10 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
   assets:
-    - assets/images/ # Убедитесь, что эта строка присутствует и правильно отформатирована
+    - assets/images/pets/
+    - assets/images/farm_animals/
+    - assets/images/wild_animals/
+    - assets/images/african_animals/
+    - assets/asset_lists/ # Добавляем путь к папке со списками ассетов
