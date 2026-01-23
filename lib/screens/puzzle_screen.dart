@@ -507,10 +507,10 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                 ),
               ],
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _resetGame,
-        child: const Icon(Icons.refresh),
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: _resetGame,
+      //   child: const Icon(Icons.refresh),
+      // ),
     );
   }
 }
