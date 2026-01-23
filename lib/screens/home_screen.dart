@@ -22,41 +22,57 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildCategoryButton(context, 'Домашние животные', 'farm_animals'),
-            _buildCategoryButton(context, 'Домашние питомцы', 'pets'),
-            _buildCategoryButton(context, 'Дикие животные', 'wild_animals'),
-            _buildCategoryButton(context, 'Африканские животные', 'african_animals'),
-          ],
+      body: Expanded(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0), // Добавляем отступы по краям
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly, // Равномерно распределяем кнопки
+            crossAxisAlignment: CrossAxisAlignment.stretch, // Растягиваем кнопки по ширине
+            children: [
+              Expanded(
+                  child:
+                      _buildCategoryButton(context, 'Домашние животные', 'farm_animals')),
+              const SizedBox(height: 16), // Отступ между кнопками
+              Expanded(
+                  child: _buildCategoryButton(context, 'Домашние питомцы', 'pets')),
+              const SizedBox(height: 16), // Отступ между кнопками
+              Expanded(
+                  child: _buildCategoryButton(context, 'Дикие животные', 'wild_animals')),
+              const SizedBox(height: 16), // Отступ между кнопками
+              Expanded(
+                  child: _buildCategoryButton(
+                      context, 'Африканские животные', 'african_animals')),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildCategoryButton(BuildContext context, String title, String categoryPath) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10.0),
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          minimumSize: const Size(200, 60),
-          textStyle: const TextStyle(fontSize: 20),
-        ),
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => CategorySelectionScreen(
-                categoryTitle: title,
-                categoryAssetPath: 'assets/images/$categoryPath/', // Путь к изображениям категории
-              ),
-            ),
-          );
-        },
-        child: Text(title),
+  Widget _buildCategoryButton(
+      BuildContext context, String title, String categoryPath) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        // remove minimumSize, as it conflicts with Expanded
+        // minimumSize: const Size(200, 60), // Убрано, так как Expanded управляет размером
+        // теперь ширина будет infinite
+        minimumSize: const Size(
+            double.infinity, 60), // Высота сохраняется, ширина на всю доступную
+        textStyle: const TextStyle(fontSize: 20),
       ),
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CategorySelectionScreen(
+              categoryTitle: title,
+              categoryAssetPath:
+                  'assets/images/$categoryPath/', // Путь к изображениям категории
+            ),
+          ),
+        );
+      },
+      child: Text(title),
     );
   }
 }
