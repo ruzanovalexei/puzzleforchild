@@ -152,8 +152,6 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
   int rows = 4; // Будет загружаться из настроек
   int cols = 4; // Будет загружаться из настроек
 
-  final double _activePiecesTrayHeight = 150;
-
   final GlobalKey _puzzleBoardKey = GlobalKey();
 
   @override
@@ -181,8 +179,6 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
     // Устанавливаем rows и cols
     rows = savedGridSize ?? 4; // Используем сохраненное значение или 4 по умолчанию
     cols = savedGridSize ?? 4; // Устанавливаем такое же значение для cols
-
-    print('[PuzzleScreen] Загружены настройки сетки: $rows x $cols');
 
     // Затем продолжаем загружать изображение и разбивать его на кусочки
     _loadImageAndSplit();
@@ -341,13 +337,11 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
   }
 
   void _onPiecePlaced(int pieceId, Offset globalDropPosition) {
-    print('[_onPiecePlaced] Called for piece ID: $pieceId, globalDropPosition: $globalDropPosition');
 
     PuzzlePiece currentPiece = _allPieces.firstWhere((p) => p.id == pieceId);
 
     final RenderBox? renderBox = _puzzleBoardKey.currentContext?.findRenderObject() as RenderBox?;
     if (renderBox == null) {
-      print('[_onPiecePlaced] Could not find RenderBox for puzzle board.');
       return;
     }
 
@@ -377,16 +371,8 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
 
     const double threshold = 50.0; // Порог для "прилипания"
 
-    print('[_onPiecePlaced] localDropPositionOnPuzzleBoard: $localDropPositionOnPuzzleBoard');
-    print('[_onPiecePlaced] correctAbsolutePositionOnBoard (top-left): $correctAbsolutePositionOnBoard');
-    print('[_onPiecePlaced] Dropped Piece Center: $droppedPieceCenter');
-    print('[_onPiecePlaced] Correct Position Center: $correctPositionCenter');
-    print('[_onPiecePlaced] Rendered Piece Size: ${pieceWidth}x${pieceHeight}');
-    print('[_onPiecePlaced] Puzzle Board Size: $actualPuzzleBoardSize');
-    print('[_onPiecePlaced] Distance: $distance, Threshold: $threshold');
 
     if (distance < threshold) {
-      print('[_onPiecePlaced] Condition met: Piece will stick. ID: $pieceId');
       setState(() {
         _activePiecesIds.remove(pieceId);
         _placedPiecesPositions[pieceId] = correctAbsolutePositionOnBoard;
@@ -397,7 +383,6 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
         _checkGameCompletion();
       });
     } else {
-      print('[_onPiecePlaced] Condition NOT met: Piece will return. ID: $pieceId');
       setState(() {
         _score = max(0, _score - 10);
       });
@@ -407,25 +392,50 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
   @override
   Widget build(BuildContext context) {
     if (_image == null && !_isLoading) {
-      // Если изображение еще не загружено, показываем индикатор загрузки
-      // и запускаем загрузку, когда BuildContext доступен для MediaQuery
       _loadGridSettingsAndImage(); // Повторно вызываем загрузку, если контекст меняется или изображение не загружено
       return const Center(child: CircularProgressIndicator());
     }
 
     final double screenWidth = MediaQuery.of(context).size.width;
     final double screenHeight = MediaQuery.of(context).size.height;
-    final double maxPuzzleBoardWidth = screenWidth * 0.95;
-    final double maxPuzzleBoardHeight = (screenHeight - kToolbarHeight - _activePiecesTrayHeight - (MediaQuery.of(context).padding.top)) * 0.95;
+    final double appBarHeight = AppBar().preferredSize.height;
+    final double bottomPadding = MediaQuery.of(context).padding.bottom;
+    final double topPadding = MediaQuery.of(context).padding.top; // Для safe area сверху
 
-    // Используем обновленные `rows` и `cols` из настроек
-    double candidatePieceSide = min(maxPuzzleBoardWidth / cols, maxPuzzleBoardHeight / rows);
-    final Size actualPieceRenderSize = Size.square(max(50.0, candidatePieceSide));
-    final Size actualTotalPuzzleBoardSize = Size(
-        actualPieceRenderSize.width * cols,
-        actualPieceRenderSize.height * rows
+    final double availableBodyHeight = screenHeight - appBarHeight - bottomPadding - topPadding;
+
+    // --- РАСЧЕТ РАЗМЕРОВ ---
+    // Максимальная ширина, которую может занять центральная доска пазла
+    final double maxPuzzleBoardWidth = screenWidth * 0.95; 
+
+    // Высота нижней панели должна вмещать текст и РЯД с кусочками.
+    // Сначала оценим, какая будет высота кусочка:
+    // Мы хотим, чтобы кусочки внизу были ТАКОГО ЖЕ размера, как и кусочки в центральной части.
+    // Значит, нам нужно сначала определить размер кусочков, который может быть в центральной части.
+    // Допустим, центральная часть займет 70% доступной высоты
+    final double estimatedAvailableHeightForPuzzleBoard = availableBodyHeight * 0.7;
+
+    // Расчет размера кусочка, исходя из этого оцененного пространства
+    double estimatedCandidatePieceSideForBoard = min(maxPuzzleBoardWidth / cols, estimatedAvailableHeightForPuzzleBoard / rows);
+    final Size estimatedPieceRenderSize = Size.square(max(50.0, estimatedCandidatePieceSideForBoard));
+    // Высота нижней панели: текст + отступы + высота одного кусочка
+    const double textContentHeight = 16.0 + (2 * 8.0); // fontSize = 16, padding = 8
+    const double rowOuterPadding = 8.0; // Padding вокруг Row
+    final double dynamicTrayHeight = textContentHeight + rowOuterPadding + estimatedPieceRenderSize.height + rowOuterPadding;
+
+    // --- ПЕРЕРАСЧЕТ ДЛЯ ЦЕНТРАЛЬНОЙ ОБЛАСТИ ПАЗЛА ---
+    // Теперь, когда у нас есть окончательная высота трея,
+    // вычисляем точное доступное пространство для центрального пазла.
+    final double actualAvailableHeightForPuzzleBoard = availableBodyHeight - dynamicTrayHeight;
+
+    // Финальный расчет размера кусочков и всей доски пазла
+    double finalCandidatePieceSide = min(maxPuzzleBoardWidth / cols, actualAvailableHeightForPuzzleBoard / rows);
+    final Size finalActualPieceRenderSize = Size.square(max(50.0, finalCandidatePieceSide));
+
+    final Size finalActualTotalPuzzleBoardSize = Size(
+        finalActualPieceRenderSize.width * cols,
+        finalActualPieceRenderSize.height * rows
     );
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Детский пазл'),
@@ -450,21 +460,19 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
           : Column(
               children: [
                 Expanded(
-                  flex: 2,
                   child: Center(
                     child: FittedBox(
                       fit: BoxFit.contain,
                       child: SizedBox(
                         key: _puzzleBoardKey,
-                        width: actualTotalPuzzleBoardSize.width,
-                        height: actualTotalPuzzleBoardSize.height,
+                        width: finalActualTotalPuzzleBoardSize.width,
+                        height: finalActualTotalPuzzleBoardSize.height,
                         child: Stack(
                           children: [
                             // Сетка
                             Positioned.fill(
-                              // Передаем обновленные `rows` и `cols`
                               child: CustomPaint(
-                                painter: GridPainter(rows: rows, cols: cols, actualPuzzleBoardSize: actualTotalPuzzleBoardSize),
+                                painter: GridPainter(rows: rows, cols: cols, actualPuzzleBoardSize: finalActualTotalPuzzleBoardSize),
                               ),
                             ),
                             // Фоновое изображение (очень прозрачное)
@@ -485,7 +493,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                               return Positioned(
                                 left: position.dx,
                                 top: position.dy,
-                                child: ImagePiece(piece: piece, pieceRenderSize: actualPieceRenderSize),
+                                child: ImagePiece(piece: piece, pieceRenderSize: finalActualPieceRenderSize), // Используем finalActualPieceRenderSize
                               );
                             }).toList(),
                             // Область для размещения кусочков (DragTarget), занимающая весь Stack
@@ -508,7 +516,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                 ),
                 // Нижняя часть - доступные кусочки
                 Container(
-                  height: _activePiecesTrayHeight,
+                  height: dynamicTrayHeight, // <--- ИСПОЛЬЗУЕМ ДИНАМИЧЕСКУЮ ВЫСОТУ
                   color: Colors.grey[100],
                   child: Column(
                     children: [
@@ -527,15 +535,16 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: _activePiecesIds.map((pieceId) {
                             PuzzlePiece piece = _allPieces.firstWhere((p) => p.id == pieceId);
+                            // Здесь ImagePiece всегда будет отрисован с finalActualPieceRenderSize
                             return Expanded(
                               child: Center(
                                 child: Padding(
                                   padding: const EdgeInsets.all(4.0),
                                   child: Draggable<int>(
                                     data: piece.id,
-                                    feedback: ImagePiece(piece: piece, opacity: 0.7, pieceRenderSize: actualPieceRenderSize),
-                                    childWhenDragging: ImagePiece(piece: piece, opacity: 0.3, pieceRenderSize: actualPieceRenderSize),
-                                    child: ImagePiece(piece: piece, pieceRenderSize: actualPieceRenderSize),
+                                    feedback: ImagePiece(piece: piece, opacity: 0.7, pieceRenderSize: finalActualPieceRenderSize), // Используем finalActualPieceRenderSize
+                                    childWhenDragging: ImagePiece(piece: piece, opacity: 0.3, pieceRenderSize: finalActualPieceRenderSize), // Используем finalActualPieceRenderSize
+                                    child: ImagePiece(piece: piece, pieceRenderSize: finalActualPieceRenderSize), // Используем finalActualPieceRenderSize
                                   ),
                                 ),
                               ),
@@ -546,12 +555,11 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                     ],
                   ),
                 ),
+                const SizedBox(height: 70.0), // Добавленный отступ 70 пикселей
+
               ],
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _resetGame,
-        child: const Icon(Icons.refresh),
-      ),
+
     );
   }
 }
