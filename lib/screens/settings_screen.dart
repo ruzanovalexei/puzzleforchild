@@ -11,7 +11,8 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  final TextEditingController _gridSizeController = TextEditingController();
+  // final TextEditingController _gridSizeController = TextEditingController(); // Больше не нужно
+  int _gridSize = 4; // Будем хранить текущее значение размера сетки
   String _validationMessage = '';
   bool _isSaveButtonEnabled = false;
 
@@ -19,64 +20,61 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void initState() {
     super.initState();
     _loadSettings();
-    _gridSizeController.addListener(_validateInput);
+    // _gridSizeController.addListener(_validateInput); // Больше не нужно
   }
 
   @override
   void dispose() {
-    _gridSizeController.removeListener(_validateInput);
-    _gridSizeController.dispose();
+    // _gridSizeController.removeListener(_validateInput); // Больше не нужно
+    // _gridSizeController.dispose(); // Больше не нужно
     super.dispose();
   }
 
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     final int? savedGridSize = prefs.getInt(SettingsScreen.puzzleGridSizeKey);
-    if (savedGridSize != null) {
-      _gridSizeController.text = savedGridSize.toString();
-    } else {
-      _gridSizeController.text = '4'; // Значение по умолчанию
-    }
+    setState(() {
+      _gridSize = savedGridSize ?? 4; // Устанавливаем _gridSize
+    });
     _validateInput(); // Проверить после загрузки
   }
 
   void _validateInput() {
-    final String text = _gridSizeController.text;
-    if (text.isEmpty) {
-      setState(() {
-        _validationMessage = 'Значение не может быть пустым.';
-        _isSaveButtonEnabled = false;
-      });
-      return;
-    }
-
-    final int? value = int.tryParse(text);
-    if (value == null) {
-      setState(() {
-        _validationMessage = 'Пожалуйста, введите число.';
-        _isSaveButtonEnabled = false;
-      });
-      return;
-    }
-
-    if (value < 4 || value > 7) {
+    // Валидация будет происходить по _gridSize
+    if (_gridSize < 4 || _gridSize > 7) {
       setState(() {
         _validationMessage = 'Значение должно быть от 4 до 7.';
         _isSaveButtonEnabled = false;
       });
-      return;
+    } else {
+      setState(() {
+        _validationMessage = '';
+        _isSaveButtonEnabled = true;
+      });
     }
+  }
 
+  void _incrementGridSize() {
     setState(() {
-      _validationMessage = '';
-      _isSaveButtonEnabled = true;
+      if (_gridSize < 7) {
+        _gridSize++;
+      }
+      _validateInput();
+    });
+  }
+
+  void _decrementGridSize() {
+    setState(() {
+      if (_gridSize > 4) {
+        _gridSize--;
+      }
+      _validateInput();
     });
   }
 
   Future<void> _saveSettings() async {
     final prefs = await SharedPreferences.getInstance();
-    final int newGridSize = int.parse(_gridSizeController.text);
-    await prefs.setInt(SettingsScreen.puzzleGridSizeKey, newGridSize);
+    await prefs.setInt(SettingsScreen.puzzleGridSizeKey, _gridSize);
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Настройки сохранены!')),
@@ -95,18 +93,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextField(
-              controller: _gridSizeController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Размерность сетки (A)',
-                hintText: 'Введите число от 4 до 7',
-                suffixText: (_gridSizeController.text.isNotEmpty && int.tryParse(_gridSizeController.text) != null)
-                    ? 'Сетка будет ${_gridSizeController.text}x${_gridSizeController.text}'
-                    : null,
-                errorText: _validationMessage.isNotEmpty ? _validationMessage : null,
-                border: const OutlineInputBorder(),
-              ),
+            Text('Размерность сетки (A):'),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: TextEditingController(text: _gridSize.toString()),
+                    readOnly: true, // Сделать поле только для чтения
+                    decoration: InputDecoration(
+                      hintText: 'От 4 до 7',
+                      suffixText: 'Сетка будет ${_gridSize}x${_gridSize}',
+                      errorText: _validationMessage.isNotEmpty ? _validationMessage : null,
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_drop_up),
+                      onPressed: _gridSize < 7 ? _incrementGridSize : null,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.arrow_drop_down),
+                      onPressed: _gridSize > 4 ? _decrementGridSize : null,
+                    ),
+                  ],
+                ),
+              ],
             ),
             const SizedBox(height: 20),
             Center(
