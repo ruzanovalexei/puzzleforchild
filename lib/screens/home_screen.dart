@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:puzzleforchild/screens/category_selection_screen.dart'; // Импортируем экран выбора картинок
+import 'package:puzzleforchild/screens/category_selection_screen.dart';
+import 'package:puzzleforchild/screens/settings_screen.dart'; // <--- Импорт SettingsScreen
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -9,6 +10,17 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Выбор категории пазлов'),
+        actions: [
+          IconButton( // <--- Это кнопка
+            icon: const Icon(Icons.settings), // <--- Иконка шестеренки
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsScreen()), // <--- Вызов SettingsScreen
+              );
+            },
+          ),
+        ],
       ),
       body: Center(
         child: Column(

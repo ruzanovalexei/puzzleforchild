@@ -4,11 +4,12 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'dart:typed_data';
-// Вспомогательные классы PuzzlePiece, _ImagePiecePainter, ImagePiece, GridPainter должны быть здесь
-// в таком же порядке, как я предоставил их в предыдущем сообщении, сверху.
+import 'package:shared_preferences/shared_preferences.dart'; // Добавляем импорт
+import 'package:puzzleforchild/screens/settings_screen.dart'; // Импортируем для доступа к ключу
+
 
 // ===================================
-// Вспомогательные классы (должны быть здесь)
+// Вспомогательные классы - ВСЕ ОНИ ДОЛЖНЫ БЫТЬ ОПРЕДЕЛЕНЫ ЗДЕСЬ, ДО PuzzleScreen
 // ===================================
 
 // Класс для представления кусочка пазла
@@ -25,7 +26,8 @@ class PuzzlePiece {
     required this.correctRelativePosition,
   });
 
-  PuzzlePiece copyWith() { // copyWith без параметров, так как текущее положение будет храниться вовне
+  // Метод copyWith должен быть здесь, вне конструктора, но внутри класса PuzzlePiece
+  PuzzlePiece copyWith() {
     return PuzzlePiece(
       id: id,
       image: image,
@@ -61,7 +63,7 @@ class _ImagePiecePainter extends CustomPainter {
   }
 }
 
-// Виджет для отображения кусочка изображения (название ImagePiece сохраним)
+// Виджет для отображения кусочка изображения
 class ImagePiece extends StatelessWidget {
   final PuzzlePiece piece;
   final double opacity;
@@ -80,7 +82,7 @@ class ImagePiece extends StatelessWidget {
       width: pieceRenderSize?.width ?? piece.sourceRect.width,
       height: pieceRenderSize?.height ?? piece.sourceRect.height,
       child: CustomPaint(
-        painter: _ImagePiecePainter(
+        painter: _ImagePiecePainter( // <-- Вот здесь используется _ImagePiecePainter
           image: piece.image,
           sourceRect: piece.sourceRect,
           opacity: opacity,
@@ -123,14 +125,13 @@ class GridPainter extends CustomPainter {
   }
 }
 
-
 // ===================================
 // Основной виджет экрана пазла
 // ===================================
 
 class PuzzleScreen extends StatefulWidget {
-  final String imageAssetPath; // Новый параметр
-  const PuzzleScreen({super.key, required this.imageAssetPath}); // Обновленный конструктор
+  final String imageAssetPath;
+  const PuzzleScreen({super.key, required this.imageAssetPath});
 
   @override
   _PuzzleScreenState createState() => _PuzzleScreenState();
@@ -147,10 +148,9 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
   int _score = 0;
   bool _isGameComplete = false;
   bool _isLoading = true;
-  // String _currentImageAsset = ''; // Больше не нужен, путь приходит через виджет
 
-  int rows = 4;
-  int cols = 4;
+  int rows = 4; // Будет загружаться из настроек
+  int cols = 4; // Будет загружаться из настроек
 
   final double _activePiecesTrayHeight = 150;
 
@@ -159,7 +159,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
   @override
   void initState() {
     super.initState();
-    _loadImageAndSplit();
+    _loadGridSettingsAndImage(); // Новый метод для загрузки настроек и изображения
   }
 
   @override
@@ -168,9 +168,29 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
     super.dispose();
   }
 
-  Future<void> _loadImageAndSplit() async {
+  // Новый метод для загрузки настроек сетки
+  Future<void> _loadGridSettingsAndImage() async {
     setState(() {
       _isLoading = true;
+    });
+
+    final prefs = await SharedPreferences.getInstance();
+    // Изменено: используем новое имя поля без '_'
+    final int? savedGridSize = prefs.getInt(SettingsScreen.puzzleGridSizeKey);
+    
+    // Устанавливаем rows и cols
+    rows = savedGridSize ?? 4; // Используем сохраненное значение или 4 по умолчанию
+    cols = savedGridSize ?? 4; // Устанавливаем такое же значение для cols
+
+    print('[PuzzleScreen] Загружены настройки сетки: $rows x $cols');
+
+    // Затем продолжаем загружать изображение и разбивать его на кусочки
+    _loadImageAndSplit();
+  }
+
+  Future<void> _loadImageAndSplit() async {
+    setState(() {
+      // Это часть общего процесса загрузки, поэтому isLoading уже true
       _placedPiecesPositions.clear();
       _activePiecesIds.clear();
       _pieceQueueIds.clear();
@@ -178,7 +198,6 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
       _isGameComplete = false;
     });
 
-    // Загружаем изображение по пути, переданному через виджет
     final ByteData data = await rootBundle.load(widget.imageAssetPath);
     _image = await decodeImageFromList(data.buffer.asUint8List());
 
@@ -203,6 +222,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
   List<PuzzlePiece> _splitImageIntoPieces(ui.Image image) {
     final List<PuzzlePiece> pieces = [];
 
+    // Используем `rows` и `cols`, загруженные из настроек
     final double actualImageWidth = (image.width / cols).floorToDouble() * cols;
     final double actualImageHeight = (image.height / rows).floorToDouble() * rows;
 
@@ -223,12 +243,12 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
           r / rows,
         );
 
-        pieces.add(PuzzlePiece(
+        pieces.add(PuzzlePiece( // Открывающая скобка конструктора
           id: id,
           image: image,
           sourceRect: sourceRect,
           correctRelativePosition: correctRelativePosition,
-        ));
+        )); // <--- Правильно закрыта скобка и добавлена точка с запятой
       }
     }
     return pieces;
@@ -237,26 +257,47 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
   void _checkGameCompletion() {
     if (_placedPiecesPositions.length == _allPieces.length && !_isGameComplete) {
       bool allPiecesAreCorrectlyPositioned = true;
-      for (var entry in _placedPiecesPositions.entries) {
-        final pieceId = entry.key;
-        final actualPosition = entry.value;
-        final piece = _allPieces.firstWhere((p) => p.id == pieceId);
+      // Мы уже знаем, что _placedPiecesPositions содержит только правильно
+      // размещенные куски. Но для дополнительной проверки, если нужно,
+      // можно сравнить каждую позицию.
+      // Если же логика onPiecePlaced гарантирует, что мы добавляем Оффсет
+      // именно в correctAbsolutePositionOnBoard, то этой проверки достаточно.
 
-        final RenderBox? puzzleBoardRenderBox = _puzzleBoardKey.currentContext?.findRenderObject() as RenderBox?;
-        if (puzzleBoardRenderBox == null) continue;
+      // Для строгой проверки, что каждый кусок действительно находится в
+      // правильной позиции (например, чтобы поймать баги или если threshold большой)
+      // необходимо получать RenderBox и пересчитывать позиции.
+      // Для простоты, если кусок помещается в _placedPiecesPositions,
+      // мы считаем его правильно расположенным.
 
+      // Однако, если вы хотите более строгую проверку по расстоянию,
+      // как в _onPiecePlaced, то ее можно добавить сюда:
+      final RenderBox? puzzleBoardRenderBox = _puzzleBoardKey.currentContext?.findRenderObject() as RenderBox?;
+      if (puzzleBoardRenderBox == null) {
+        // Если не можем получить RenderBox, не можем проверить позиции строго.
+        // Допустим, что все правильно.
+        allPiecesAreCorrectlyPositioned = true;
+      } else {
         final Size actualPuzzleBoardSize = puzzleBoardRenderBox.size;
-         final Offset correctAbsolutePositionOnBoard = Offset(
-          piece.correctRelativePosition.dx * actualPuzzleBoardSize.width,
-          piece.correctRelativePosition.dy * actualPuzzleBoardSize.height,
-        );
 
-        final double distance = (actualPosition - correctAbsolutePositionOnBoard).distance;
-        if (distance >= 5.0) { // Используем небольшой порог для проверки "правильности"
-          allPiecesAreCorrectlyPositioned = false;
-          break;
+        for (var entry in _placedPiecesPositions.entries) {
+          final pieceId = entry.key;
+          final actualPlacedPosition = entry.value;
+          final piece = _allPieces.firstWhere((p) => p.id == pieceId);
+
+          final Offset correctAbsolutePositionOnBoard = Offset(
+            piece.correctRelativePosition.dx * actualPuzzleBoardSize.width,
+            piece.correctRelativePosition.dy * actualPuzzleBoardSize.height,
+          );
+
+          // Проверяем, что размещенная позиция очень близка к идеально правильной
+          final double distance = (actualPlacedPosition - correctAbsolutePositionOnBoard).distance;
+          if (distance > 1.0) { // Очень маленький порог для идеального совпадения
+            allPiecesAreCorrectlyPositioned = false;
+            break;
+          }
         }
       }
+
 
       if (allPiecesAreCorrectlyPositioned) {
         setState(() {
@@ -295,10 +336,8 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
       _score = 0;
       _isGameComplete = false;
       _isLoading = true;
-      // _currentImageAsset = _getRandomImageAsset(); // Удаляем
     });
-    // Просто перезапустим с тем же изображением, которое было выбрано
-    _loadImageAndSplit();
+    _loadGridSettingsAndImage(); // Загружаем настройки и изображение
   }
 
   void _onPiecePlaced(int pieceId, Offset globalDropPosition) {
@@ -342,10 +381,9 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
     print('[_onPiecePlaced] correctAbsolutePositionOnBoard (top-left): $correctAbsolutePositionOnBoard');
     print('[_onPiecePlaced] Dropped Piece Center: $droppedPieceCenter');
     print('[_onPiecePlaced] Correct Position Center: $correctPositionCenter');
-    print('[_onPiecePlaced] Rendered Piece Size: ${pieceWidth}x$pieceHeight');
+    print('[_onPiecePlaced] Rendered Piece Size: ${pieceWidth}x${pieceHeight}');
     print('[_onPiecePlaced] Puzzle Board Size: $actualPuzzleBoardSize');
     print('[_onPiecePlaced] Distance: $distance, Threshold: $threshold');
-
 
     if (distance < threshold) {
       print('[_onPiecePlaced] Condition met: Piece will stick. ID: $pieceId');
@@ -366,11 +404,12 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     if (_image == null && !_isLoading) {
-      _loadImageAndSplit();
+      // Если изображение еще не загружено, показываем индикатор загрузки
+      // и запускаем загрузку, когда BuildContext доступен для MediaQuery
+      _loadGridSettingsAndImage(); // Повторно вызываем загрузку, если контекст меняется или изображение не загружено
       return const Center(child: CircularProgressIndicator());
     }
 
@@ -379,6 +418,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
     final double maxPuzzleBoardWidth = screenWidth * 0.95;
     final double maxPuzzleBoardHeight = (screenHeight - kToolbarHeight - _activePiecesTrayHeight - (MediaQuery.of(context).padding.top)) * 0.95;
 
+    // Используем обновленные `rows` и `cols` из настроек
     double candidatePieceSide = min(maxPuzzleBoardWidth / cols, maxPuzzleBoardHeight / rows);
     final Size actualPieceRenderSize = Size.square(max(50.0, candidatePieceSide));
     final Size actualTotalPuzzleBoardSize = Size(
@@ -422,6 +462,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                           children: [
                             // Сетка
                             Positioned.fill(
+                              // Передаем обновленные `rows` и `cols`
                               child: CustomPaint(
                                 painter: GridPainter(rows: rows, cols: cols, actualPuzzleBoardSize: actualTotalPuzzleBoardSize),
                               ),
@@ -507,10 +548,10 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                 ),
               ],
             ),
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: _resetGame,
-      //   child: const Icon(Icons.refresh),
-      // ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _resetGame,
+        child: const Icon(Icons.refresh),
+      ),
     );
   }
 }
