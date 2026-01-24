@@ -563,7 +563,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                                     borderRadius: BorderRadius.circular(10.0),
                                   ),
                                   child: const Text(
-                                    'Поздравляем!',
+                                    'Ура! Получилось!',
                                     style: TextStyle(
                                       fontSize: 36,
                                       fontWeight: FontWeight.bold,
