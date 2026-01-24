@@ -12,7 +12,7 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Выбор категории пазлов',
+          'Выбор категории животных',
           style: TextStyle(
             fontSize: 24, // Увеличиваем размер шрифта
             fontWeight: FontWeight.bold,

@@ -29,7 +29,7 @@ android {
         versionCode = 100000
         versionName = flutter.versionName
 
-        manifestPlaceholders["yandexMobileAdsAppId"] = "demo-app-id"
+        manifestPlaceholders["yandexMobileAdsAppId"] = "18531801"
     }
 
     dependencies {

@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:puzzleforchild/screens/home_screen.dart'; // Предположим, ProjectName - это название вашего проекта в pubspec.yaml
 
-void main() {
+void main() async {
   runApp(const MyApp());
+    // Закрепляем портретную ориентацию
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 }
 
 class MyApp extends StatelessWidget {
@@ -11,7 +17,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Детский Пазл',
+      title: 'Мозаика. Животные',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),

@@ -695,15 +695,15 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                 // Добавляем отступ в 20 пикселей
                 const SizedBox(height: 20.0),
                 // Блок рекламы - используем созданный один раз виджет
-                // if (_bannerWidget != null) ...[
-                //   _bannerWidget!,
-                // ] else ...[
-                //   // Показываем загрузку, если виджет еще не создан
-                //   const SizedBox(
-                //     height: 50,
-                //     child: Center(child: CircularProgressIndicator()),
-                //   ),
-                // ],
+                if (_bannerWidget != null) ...[
+                  _bannerWidget!,
+                ] else ...[
+                  // Показываем загрузку, если виджет еще не создан
+                  const SizedBox(
+                    height: 50,
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                ],
               ],
             ),
     );
