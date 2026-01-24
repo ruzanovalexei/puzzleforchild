@@ -493,7 +493,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                         fit: BoxFit.scaleDown,
                         alignment: Alignment.center,
                         child: Text(
-                          p.basenameWithoutExtension(widget.imageAssetPath),
+                          p.basenameWithoutExtension(_currentImagePath!),
                           style: const TextStyle(
                             fontSize: 48, // Увеличил размер шрифта
                             color: Colors.black,
