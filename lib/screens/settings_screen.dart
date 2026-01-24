@@ -58,23 +58,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  void _incrementGridSize() {
-    setState(() {
-      if (_gridSize < 7) {
-        _gridSize++;
-      }
-      _validateInput();
-    });
-  }
+  // void _incrementGridSize() {
+  //   setState(() {
+  //     if (_gridSize < 7) {
+  //       _gridSize++;
+  //     }
+  //     _validateInput();
+  //   });
+  // }
 
-  void _decrementGridSize() {
-    setState(() {
-      if (_gridSize > 3) {
-        _gridSize--;
-      }
-      _validateInput();
-    });
-  }
+  // void _decrementGridSize() {
+  //   setState(() {
+  //     if (_gridSize > 3) {
+  //       _gridSize--;
+  //     }
+  //     _validateInput();
+  //   });
+  // }
 
   Future<void> _saveSettings() async {
     final prefs = await SharedPreferences.getInstance();
@@ -98,37 +98,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Размерность сетки (A):'),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: TextEditingController(text: _gridSize.toString()),
-                    readOnly: true, // Сделать поле только для чтения
-                    decoration: InputDecoration(
-                      hintText: 'От 3 до 7',
-                      suffixText: 'Сетка будет ${_gridSize}x${_gridSize}',
-                      errorText: _validationMessage.isNotEmpty ? _validationMessage : null,
-                      border: const OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_drop_up),
-                      onPressed: _gridSize < 7 ? _incrementGridSize : null,
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.arrow_drop_down),
-                      onPressed: _gridSize > 3 ? _decrementGridSize : null,
-                    ),
-                  ],
-                ),
-              ],
+            Text('Размерность сетки (количество клеток по горизонтали и вертикали):'),
+            Slider(
+              value: _gridSize.toDouble(),
+              min: 3,
+              max: 7,
+              divisions: 4, // Для значений 3, 4, 5, 6, 7
+              label: _gridSize.toString(),
+              onChanged: (double value) {
+                setState(() {
+                  _gridSize = value.toInt();
+                  _validateInput();
+                });
+              },
             ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Text(
+                'Сетка будет ${_gridSize}x${_gridSize}',
+                style: const TextStyle(fontSize: 16),
+              ),
+            ),
+            if (_validationMessage.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Text(
+                  _validationMessage,
+                  style: const TextStyle(color: Colors.red, fontSize: 14),
+                ),
+              ),
             const SizedBox(height: 20),
             Text('Прозрачность фоновой картинки:'),
             Slider(
