@@ -5,6 +5,7 @@ class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
   static const String puzzleGridSizeKey = 'puzzleGridSize'; // Ключ для сохранения настройки
+  static const String puzzleOpacityKey = 'puzzleOpacity'; // Новый ключ для сохранения настройки прозрачности
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -13,6 +14,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   // final TextEditingController _gridSizeController = TextEditingController(); // Больше не нужно
   int _gridSize = 4; // Будем хранить текущее значение размера сетки
+  double _puzzleOpacity = 0.1; // Для прозрачности
   String _validationMessage = '';
   bool _isSaveButtonEnabled = false;
 
@@ -33,8 +35,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     final int? savedGridSize = prefs.getInt(SettingsScreen.puzzleGridSizeKey);
+    final double? savedOpacity = prefs.getDouble(SettingsScreen.puzzleOpacityKey); // Загружаем прозрачность
     setState(() {
       _gridSize = savedGridSize ?? 4; // Устанавливаем _gridSize
+      _puzzleOpacity = savedOpacity ?? 0.1; // Устанавливаем _puzzleOpacity по умолчанию
     });
     _validateInput(); // Проверить после загрузки
   }
@@ -75,6 +79,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _saveSettings() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(SettingsScreen.puzzleGridSizeKey, _gridSize);
+    await prefs.setDouble(SettingsScreen.puzzleOpacityKey, _puzzleOpacity); // Сохраняем прозрачность
 
     // ScaffoldMessenger.of(context).showSnackBar(
     //   const SnackBar(content: Text('Настройки сохранены!')),
@@ -123,6 +128,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ],
                 ),
               ],
+            ),
+            const SizedBox(height: 20),
+            Text('Прозрачность фоновой картинки:'),
+            Slider(
+              value: _puzzleOpacity,
+              min: 0.1,
+              max: 0.5,
+              divisions: 4, // чтобы получить 0.1, 0.2, 0.3, 0.4, 0.5
+              label: _puzzleOpacity.toStringAsFixed(1),
+              onChanged: (double value) {
+                setState(() {
+                  _puzzleOpacity = value;
+                });
+              },
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Text(
+                'Текущая прозрачность: ${_puzzleOpacity.toStringAsFixed(1)}',
+                style: const TextStyle(fontSize: 16),
+              ),
             ),
             const SizedBox(height: 20),
             Center(

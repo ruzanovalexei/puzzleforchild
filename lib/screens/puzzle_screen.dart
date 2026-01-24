@@ -158,6 +158,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
   Widget? _bannerWidget;
   int rows = 4;
   int cols = 4;
+  double _backgroundOpacity = 0.1; // Переменная для хранения прозрачности
 
   final GlobalKey _puzzleBoardKey = GlobalKey();
   String? _currentImagePath; // Для отслеживания текущего пазла
@@ -229,9 +230,11 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
 
     final prefs = await SharedPreferences.getInstance();
     final int? savedGridSize = prefs.getInt(SettingsScreen.puzzleGridSizeKey);
+    final double? savedOpacity = prefs.getDouble(SettingsScreen.puzzleOpacityKey); // Загружаем значение прозрачности
     
     rows = savedGridSize ?? 4;
     cols = savedGridSize ?? 4;
+    _backgroundOpacity = savedOpacity ?? 0.1; // Используем загруженное значение или значение по умолчанию
 
     await _loadImageAndSplit(_currentImagePath!); // Используем _currentImagePath
   }
@@ -532,7 +535,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                             // Фоновое изображение (или полная картинка после завершения)
                             Positioned.fill(
                               child: Opacity(
-                                opacity: _isGameComplete ? 1.0 : 0.1, // Полная картинка при завершении
+                                opacity: _isGameComplete ? 1.0 : _backgroundOpacity, // Используем значение из настроек
                                 child: RawImage(
                                   image: _image,
                                   fit: BoxFit.fill,
