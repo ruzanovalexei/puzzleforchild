@@ -34,7 +34,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final prefs = await SharedPreferences.getInstance();
     final int? savedGridSize = prefs.getInt(SettingsScreen.puzzleGridSizeKey);
     setState(() {
-      _gridSize = savedGridSize ?? 3; // Устанавливаем _gridSize
+      _gridSize = savedGridSize ?? 4; // Устанавливаем _gridSize
     });
     _validateInput(); // Проверить после загрузки
   }

@@ -7,6 +7,7 @@ import 'dart:typed_data';
 import 'package:shared_preferences/shared_preferences.dart'; // Добавляем импорт
 import 'package:puzzleforchild/screens/settings_screen.dart'; // Импортируем для доступа к ключу
 import 'package:puzzleforchild/services/ad_banner_service.dart';
+import 'package:path/path.dart' as p; // Импортируем пакет path
 // import 'package:confetti/confetti.dart'; // <-- Удаляем импорт Confetti
 
 // ===================================
@@ -483,6 +484,35 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
+                Center(
+                  child: SizedBox(
+                    width: screenWidth / 2, // Ширина в половину экрана
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.center,
+                        child: Text(
+                          p.basenameWithoutExtension(widget.imageAssetPath),
+                          style: const TextStyle(
+                            fontSize: 48, // Увеличил размер шрифта
+                            color: Colors.black,
+                            shadows: [  // Добавляем тени для красочности
+                              Shadow(
+                                blurRadius: 4.0,
+                                color: Colors.black,
+                                offset: Offset(2.0, 2.0),
+                              ),
+                            ],
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center, // Выравнивание текста по центру
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
                 Expanded(
                   child: Center(
                     child: FittedBox(
@@ -657,22 +687,22 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                             ),
                           ],
                         ),
-                ),
-                          // Добавляем отступ в 20 пикселей
+                ), // Закрытие Container, который включает Row или Column с кусочками
+
+                // Добавляем отступ в 20 пикселей
                 const SizedBox(height: 20.0),
-                        // Блок рекламы - используем созданный один раз виджет
-          if (_bannerWidget != null) ...[
-            _bannerWidget!,
-          ] else ...[
-            // Показываем загрузку, если виджет еще не создан
-            const SizedBox(
-              height: 50,
-              child: Center(child: CircularProgressIndicator()),
-            ),
-          ],
+                // Блок рекламы - используем созданный один раз виджет
+                // if (_bannerWidget != null) ...[
+                //   _bannerWidget!,
+                // ] else ...[
+                //   // Показываем загрузку, если виджет еще не создан
+                //   const SizedBox(
+                //     height: 50,
+                //     child: Center(child: CircularProgressIndicator()),
+                //   ),
+                // ],
               ],
             ),
-
     );
   }
 }

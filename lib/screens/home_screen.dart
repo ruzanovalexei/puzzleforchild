@@ -11,7 +11,14 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Выбор категории пазлов'),
+        title: const Text(
+          'Выбор категории пазлов',
+          style: TextStyle(
+            fontSize: 24, // Увеличиваем размер шрифта
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true, // Выравниваем заголовок по центру
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
