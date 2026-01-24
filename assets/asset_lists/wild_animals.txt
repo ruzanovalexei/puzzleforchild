@@ -1,1 +1,16 @@
-assets/images/wild_animals/fon1.webp
+assets/images/wild_animals/Белка.jpeg
+assets/images/wild_animals/Белый медведь.jpeg
+assets/images/wild_animals/Бурый медведь.jpeg
+assets/images/wild_animals/Волк.jpeg
+assets/images/wild_animals/Горностай.jpeg
+assets/images/wild_animals/Заяц-беляк.jpeg
+assets/images/wild_animals/Заяц-русак.jpeg
+assets/images/wild_animals/Кабан.jpeg
+assets/images/wild_animals/Косуля.jpeg
+assets/images/wild_animals/Лисица.jpeg
+assets/images/wild_animals/Лось.jpeg
+assets/images/wild_animals/Морж.jpeg
+assets/images/wild_animals/Рысь.jpeg
+assets/images/wild_animals/Северный олень.jpeg
+assets/images/wild_animals/Суслик.jpeg
+assets/images/wild_animals/Тигр амурский.jpeg

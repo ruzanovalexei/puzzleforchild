@@ -10,6 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   shared_preferences: ^2.0.15 # Добавьте эту строку
+  yandex_mobileads: ^7.18.0
   # ... остальные зависимости ...
 
 dev_dependencies:

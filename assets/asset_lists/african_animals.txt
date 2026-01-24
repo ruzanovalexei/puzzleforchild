@@ -1,1 +1,16 @@
-assets/images/african_animals/fon1.webp
+assets/images/african_animals/Бегемот.jpeg
+assets/images/african_animals/Буйвол.jpeg
+assets/images/african_animals/Верблюд.webp
+assets/images/african_animals/Гепард.jpeg
+assets/images/african_animals/Гиена.jpeg
+assets/images/african_animals/Горилла.jpeg
+assets/images/african_animals/Зебра.webp
+assets/images/african_animals/Крокодил.jpeg
+assets/images/african_animals/Лев.jpeg
+assets/images/african_animals/Лемур.jpeg
+assets/images/african_animals/Леопард.jpeg
+assets/images/african_animals/Носорог.jpeg
+assets/images/african_animals/Слон.jpeg
+assets/images/african_animals/Страус.jpeg
+assets/images/african_animals/Сурикат.jpeg
+assets/images/african_animals/Шимпанзе.jpeg

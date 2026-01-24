@@ -1,1 +1,14 @@
-assets/images/farm_animals/fon1.webp
+assets/images/farm_animals/Баран.jpeg
+assets/images/farm_animals/Бык.jpeg
+assets/images/farm_animals/Гусь.jpeg
+assets/images/farm_animals/Индюк.jpeg
+assets/images/farm_animals/Коза.jpeg
+assets/images/farm_animals/Корова.jpeg
+assets/images/farm_animals/Курица.jpeg
+assets/images/farm_animals/Лошадь.jpeg
+assets/images/farm_animals/Овца.jpeg
+assets/images/farm_animals/Осел.jpeg
+assets/images/farm_animals/Петух.jpeg
+assets/images/farm_animals/Свинья.jpeg
+assets/images/farm_animals/Утка.jpeg
+assets/images/farm_animals/Фазан.jpeg

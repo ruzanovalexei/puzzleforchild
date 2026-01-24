@@ -6,6 +6,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'dart:typed_data';
 import 'package:shared_preferences/shared_preferences.dart'; // Добавляем импорт
 import 'package:puzzleforchild/screens/settings_screen.dart'; // Импортируем для доступа к ключу
+import 'package:puzzleforchild/services/ad_banner_service.dart';
 
 
 // ===================================
@@ -143,12 +144,13 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
   final Map<int, Offset> _placedPiecesPositions = {};
   final Set<int> _activePiecesIds = {};
   final List<int> _pieceQueueIds = [];
-
+  final _adBannerService = AdBannerService();
   Timer? _timer;
   int _score = 0;
   bool _isGameComplete = false;
   bool _isLoading = true;
-
+  // Виджет баннера создается один раз и переиспользуется
+  Widget? _bannerWidget;
   int rows = 4; // Будет загружаться из настроек
   int cols = 4; // Будет загружаться из настроек
 
@@ -158,11 +160,21 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
   void initState() {
     super.initState();
     _loadGridSettingsAndImage(); // Новый метод для загрузки настроек и изображения
+    _initializeBannerWidget();
   }
-
+  // Инициализация виджета баннера - создается один раз
+  void _initializeBannerWidget() {
+    if (_bannerWidget == null) {
+      _bannerWidget = _adBannerService.createBannerWidget();
+      if (mounted) {
+        setState(() {});
+      }
+    }
+  }
   @override
   void dispose() {
     _timer?.cancel();
+    _bannerWidget = null;
     super.dispose();
   }
 
@@ -555,8 +567,17 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 70.0), // Добавленный отступ 70 пикселей
-
+                // const SizedBox(height: 70.0), // Добавленный отступ 70 пикселей
+            // Блок рекламы - используем созданный один раз виджет
+            if (_bannerWidget != null) ...[
+              _bannerWidget!,
+            ] else ...[
+              // Показываем загрузку, если виджет еще не создан
+              const SizedBox(
+                height: 50,
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            ],
               ],
             ),
 

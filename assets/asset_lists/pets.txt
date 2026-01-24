@@ -1,14 +1,16 @@
-assets/images/pets/fon1.webp
-assets/images/pets/fon2.webp
-assets/images/pets/fon3.webp
-assets/images/pets/fon4.webp
-assets/images/pets/fon5.webp
-assets/images/pets/fon6.webp
-assets/images/pets/fon7.webp
-assets/images/pets/fon8.webp
-assets/images/pets/fon9.webp
-assets/images/pets/fon10.webp
-assets/images/pets/fon11.webp
-assets/images/pets/fon12.webp
-assets/images/pets/fon13.webp
-assets/images/pets/fon14.webp
+assets/images/pets/Канарейка.webp
+assets/images/pets/Капибара.jpeg
+assets/images/pets/Карликовый кролик.jpeg
+assets/images/pets/Кошка.webp
+assets/images/pets/Лягушка.jpeg
+assets/images/pets/Морская свинка.webp
+assets/images/pets/Паук-птицеед.jpeg
+assets/images/pets/Попугай.webp
+assets/images/pets/Рыбка.webp
+assets/images/pets/Собака.webp
+assets/images/pets/Улитка.webp
+assets/images/pets/Хомяк.webp
+assets/images/pets/Хорек.jpeg
+assets/images/pets/Черепаха.webp
+assets/images/pets/Шиншилла.webp
+assets/images/pets/Ящерица.jpeg
