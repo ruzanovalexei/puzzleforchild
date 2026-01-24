@@ -76,9 +76,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(SettingsScreen.puzzleGridSizeKey, _gridSize);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Настройки сохранены!')),
-    );
+    // ScaffoldMessenger.of(context).showSnackBar(
+    //   const SnackBar(content: Text('Настройки сохранены!')),
+    // );
     Navigator.pop(context); // Возвращаемся на предыдущий экран
   }
 

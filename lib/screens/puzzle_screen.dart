@@ -144,9 +144,11 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
   final Map<int, Offset> _placedPiecesPositions = {};
   final Set<int> _activePiecesIds = {};
   final List<int> _pieceQueueIds = [];
-  final _adBannerService = AdBannerService();
+  final _adBannerService = AdBannerService(); // <-- Оставил, так как в диалоге может быть
+                                            // _adBannerService.createRewardedAd(),
+                                            // но он не используется в данном коде
   Timer? _timer;
-  int _score = 0;
+  // int _score = 0; // Удаляем переменную счета
   bool _isGameComplete = false;
   bool _isLoading = true;
   // Виджет баннера создается один раз и переиспользуется
@@ -162,6 +164,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
     _loadGridSettingsAndImage(); // Новый метод для загрузки настроек и изображения
     _initializeBannerWidget();
   }
+
   // Инициализация виджета баннера - создается один раз
   void _initializeBannerWidget() {
     if (_bannerWidget == null) {
@@ -202,7 +205,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
       _placedPiecesPositions.clear();
       _activePiecesIds.clear();
       _pieceQueueIds.clear();
-      _score = 0;
+      // _score = 0; // Удаляем обнуление счета
       _isGameComplete = false;
     });
 
@@ -318,7 +321,8 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
           context: context,
           builder: (context) => AlertDialog(
             title: const Text('Поздравляем!'),
-            content: Text('Вы собрали пазл!\nВаш счет: $_score'),
+            // content: Text('Вы собрали пазл!\nВаш счет: $_score'), // Удаляем отображение счета
+            content: const Text('Вы собрали пазл!'),
             actions: [
               TextButton(
                 onPressed: () {
@@ -341,7 +345,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
       _placedPiecesPositions.clear();
       _activePiecesIds.clear();
       _pieceQueueIds.clear();
-      _score = 0;
+      // _score = 0; // Удаляем обнуление счета
       _isGameComplete = false;
       _isLoading = true;
     });
@@ -388,7 +392,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
       setState(() {
         _activePiecesIds.remove(pieceId);
         _placedPiecesPositions[pieceId] = correctAbsolutePositionOnBoard;
-        _score += 100;
+        // _score += 100; // Удаляем начисление очков
         if (_pieceQueueIds.isNotEmpty) {
           _activePiecesIds.add(_pieceQueueIds.removeAt(0));
         }
@@ -396,7 +400,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
       });
     } else {
       setState(() {
-        _score = max(0, _score - 10);
+        // _score = max(0, _score - 10); // Удаляем вычитание очков
       });
     }
   }
@@ -430,10 +434,13 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
     // Расчет размера кусочка, исходя из этого оцененного пространства
     double estimatedCandidatePieceSideForBoard = min(maxPuzzleBoardWidth / cols, estimatedAvailableHeightForPuzzleBoard / rows);
     final Size estimatedPieceRenderSize = Size.square(max(50.0, estimatedCandidatePieceSideForBoard));
+
+
     // Высота нижней панели: текст + отступы + высота одного кусочка
     const double textContentHeight = 16.0 + (2 * 8.0); // fontSize = 16, padding = 8
     const double rowOuterPadding = 8.0; // Padding вокруг Row
     final double dynamicTrayHeight = textContentHeight + rowOuterPadding + estimatedPieceRenderSize.height + rowOuterPadding;
+
 
     // --- ПЕРЕРАСЧЕТ ДЛЯ ЦЕНТРАЛЬНОЙ ОБЛАСТИ ПАЗЛА ---
     // Теперь, когда у нас есть окончательная высота трея,
@@ -448,24 +455,26 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
         finalActualPieceRenderSize.width * cols,
         finalActualPieceRenderSize.height * rows
     );
+
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Детский пазл'),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                const Icon(Icons.star, color: Colors.yellow),
-                const SizedBox(width: 4),
-                Text(
-                  '$_score',
-                  style: const TextStyle(fontSize: 20),
-                ),
-              ],
-            ),
-          ),
-        ],
+        // actions: [ // Удаляем отображение счета
+        //   Padding(
+        //     padding: const EdgeInsets.all(8.0),
+        //     child: Row(
+        //       children: [
+        //         const Icon(Icons.star, color: Colors.yellow),
+        //         const SizedBox(width: 4),
+        //         Text(
+        //           '$_score',
+        //           style: const TextStyle(fontSize: 20),
+        //         ),
+        //       ],
+        //     ),
+        //   ),
+        // ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -567,17 +576,8 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                     ],
                   ),
                 ),
-                // const SizedBox(height: 70.0), // Добавленный отступ 70 пикселей
-            // Блок рекламы - используем созданный один раз виджет
-            if (_bannerWidget != null) ...[
-              _bannerWidget!,
-            ] else ...[
-              // Показываем загрузку, если виджет еще не создан
-              const SizedBox(
-                height: 50,
-                child: Center(child: CircularProgressIndicator()),
-              ),
-            ],
+                const SizedBox(height: 70.0), // Добавленный отступ 70 пикселей
+
               ],
             ),
 
