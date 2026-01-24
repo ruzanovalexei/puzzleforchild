@@ -31,19 +31,19 @@ class HomeScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
-              child: _buildCategoryButton(context, 'Домашние животные', 'farm_animals'),
+              child: _buildCategoryButton(context, 'Добашние животные', 'pets'),
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: _buildCategoryButton(context, 'Домашние питомцы', 'pets'),
+              child: _buildCategoryButton(context, 'Деревенские животные', 'farm_animals'),
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: _buildCategoryButton(context, 'Дикие животные', 'wild_animals'),
+              child: _buildCategoryButton(context, 'Дикие животные России', 'wild_animals'),
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: _buildCategoryButton(context, 'Африканские животные', 'african_animals'),
+              child: _buildCategoryButton(context, 'Дике животные Африки', 'african_animals'),
             ),
           ],
         ),

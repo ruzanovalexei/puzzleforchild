@@ -1,16 +1,16 @@
-assets/images/pets/Канарейка.webp
-assets/images/pets/Капибара.jpeg
-assets/images/pets/Карликовый кролик.jpeg
-assets/images/pets/Кошка.webp
-assets/images/pets/Лягушка.jpeg
-assets/images/pets/Морская свинка.webp
-assets/images/pets/Паук-птицеед.jpeg
-assets/images/pets/Попугай.webp
-assets/images/pets/Рыбка.webp
-assets/images/pets/Собака.webp
-assets/images/pets/Улитка.webp
-assets/images/pets/Хомяк.webp
-assets/images/pets/Хорек.jpeg
-assets/images/pets/Черепаха.webp
-assets/images/pets/Шиншилла.webp
-assets/images/pets/Ящерица.jpeg
+assets/images/pets/РљР°РЅР°СЂРµР№РєР°.webp
+assets/images/pets/РљР°РїРёР±Р°СЂР°.jpeg
+assets/images/pets/РљР°СЂР»РёРєРѕРІС‹Р№ РєСЂРѕР»РёРє.jpeg
+assets/images/pets/РљРѕС€РєР°.webp
+assets/images/pets/Р›СЏРіСѓС€РєР°.jpeg
+assets/images/pets/РњРѕСЂСЃРєР°СЏ СЃРІРёРЅРєР°.webp
+assets/images/pets/РџР°СѓРє-РїС‚РёС†РµРµРґ.jpeg
+assets/images/pets/РџРѕРїСѓРіР°Р№.webp
+assets/images/pets/Р С‹Р±РєР°.webp
+assets/images/pets/РЎРѕР±Р°РєР°.webp
+assets/images/pets/РЈР»РёС‚РєР°.webp
+assets/images/pets/РҐРѕРјСЏРє.webp
+assets/images/pets/РҐРѕСЂРµРє.jpeg
+assets/images/pets/Р§РµСЂРµРїР°С…Р°.webp
+assets/images/pets/РЁРёРЅС€РёР»Р»Р°.webp
+assets/images/pets/РЇС‰РµСЂРёС†Р°.jpeg

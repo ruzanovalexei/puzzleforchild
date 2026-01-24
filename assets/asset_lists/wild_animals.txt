@@ -1,16 +1,16 @@
-assets/images/wild_animals/Белка.jpeg
-assets/images/wild_animals/Белый медведь.jpeg
-assets/images/wild_animals/Бурый медведь.jpeg
-assets/images/wild_animals/Волк.jpeg
-assets/images/wild_animals/Горностай.jpeg
-assets/images/wild_animals/Заяц-беляк.jpeg
-assets/images/wild_animals/Заяц-русак.jpeg
-assets/images/wild_animals/Кабан.jpeg
-assets/images/wild_animals/Косуля.jpeg
-assets/images/wild_animals/Лисица.jpeg
-assets/images/wild_animals/Лось.jpeg
-assets/images/wild_animals/Морж.jpeg
-assets/images/wild_animals/Рысь.jpeg
-assets/images/wild_animals/Северный олень.jpeg
-assets/images/wild_animals/Суслик.jpeg
-assets/images/wild_animals/Тигр амурский.jpeg
+assets/images/wild_animals/Р‘РµР»РєР°.jpeg
+assets/images/wild_animals/Р‘РµР»С‹Р№ РјРµРґРІРµРґСЊ.jpeg
+assets/images/wild_animals/Р‘СѓСЂС‹Р№ РјРµРґРІРµРґСЊ.jpeg
+assets/images/wild_animals/Р’РѕР»Рє.jpeg
+assets/images/wild_animals/Р“РѕСЂРЅРѕСЃС‚Р°Р№.jpeg
+assets/images/wild_animals/Р—Р°СЏС†-Р±РµР»СЏРє.jpeg
+assets/images/wild_animals/Р—Р°СЏС†-СЂСѓСЃР°Рє.jpeg
+assets/images/wild_animals/РљР°Р±Р°РЅ.jpeg
+assets/images/wild_animals/РљРѕСЃСѓР»СЏ.jpeg
+assets/images/wild_animals/Р›РёСЃРёС†Р°.jpeg
+assets/images/wild_animals/Р›РѕСЃСЊ.jpeg
+assets/images/wild_animals/РњРѕСЂР¶.jpeg
+assets/images/wild_animals/Р С‹СЃСЊ.jpeg
+assets/images/wild_animals/РЎРµРІРµСЂРЅС‹Р№ РѕР»РµРЅСЊ.jpeg
+assets/images/wild_animals/РЎСѓСЃР»РёРє.jpeg
+assets/images/wild_animals/РўРёРіСЂ Р°РјСѓСЂСЃРєРёР№.jpeg
