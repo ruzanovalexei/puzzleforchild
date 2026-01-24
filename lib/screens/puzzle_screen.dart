@@ -477,7 +477,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Детский пазл'),
+        title: const Text('назад'),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -533,13 +533,14 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                                     borderRadius: BorderRadius.circular(10.0),
                                   ),
                                   child: const Text(
-                                    'Поздравляю!',
+                                    'Поздравляем!',
                                     style: TextStyle(
                                       fontSize: 36,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,
                                     ),
                                   ),
+                                  
                                 ),
                               ),
                             
@@ -657,6 +658,8 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                           ],
                         ),
                 ),
+                          // Добавляем отступ в 20 пикселей
+                const SizedBox(height: 20.0),
                         // Блок рекламы - используем созданный один раз виджет
           if (_bannerWidget != null) ...[
             _bannerWidget!,

@@ -34,16 +34,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final prefs = await SharedPreferences.getInstance();
     final int? savedGridSize = prefs.getInt(SettingsScreen.puzzleGridSizeKey);
     setState(() {
-      _gridSize = savedGridSize ?? 4; // Устанавливаем _gridSize
+      _gridSize = savedGridSize ?? 3; // Устанавливаем _gridSize
     });
     _validateInput(); // Проверить после загрузки
   }
 
   void _validateInput() {
     // Валидация будет происходить по _gridSize
-    if (_gridSize < 4 || _gridSize > 7) {
+    if (_gridSize < 3 || _gridSize > 7) {
       setState(() {
-        _validationMessage = 'Значение должно быть от 4 до 7.';
+        _validationMessage = 'Значение должно быть от 3 до 7.';
         _isSaveButtonEnabled = false;
       });
     } else {
@@ -65,7 +65,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void _decrementGridSize() {
     setState(() {
-      if (_gridSize > 4) {
+      if (_gridSize > 3) {
         _gridSize--;
       }
       _validateInput();
@@ -102,7 +102,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     controller: TextEditingController(text: _gridSize.toString()),
                     readOnly: true, // Сделать поле только для чтения
                     decoration: InputDecoration(
-                      hintText: 'От 4 до 7',
+                      hintText: 'От 3 до 7',
                       suffixText: 'Сетка будет ${_gridSize}x${_gridSize}',
                       errorText: _validationMessage.isNotEmpty ? _validationMessage : null,
                       border: const OutlineInputBorder(),
@@ -118,7 +118,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     IconButton(
                       icon: const Icon(Icons.arrow_drop_down),
-                      onPressed: _gridSize > 4 ? _decrementGridSize : null,
+                      onPressed: _gridSize > 3 ? _decrementGridSize : null,
                     ),
                   ],
                 ),
