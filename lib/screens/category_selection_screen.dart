@@ -122,7 +122,10 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => PuzzleScreen(imageAssetPath: imagePath),
+                                builder: (context) => PuzzleScreen(
+                                  imageAssetPath: imagePath,
+                                  categoryAssetPath: widget.categoryAssetPath, // <--- Добавляем этот параметр
+                                ),
                               ),
                             );
                           },

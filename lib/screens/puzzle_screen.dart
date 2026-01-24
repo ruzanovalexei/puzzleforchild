@@ -7,7 +7,7 @@ import 'dart:typed_data';
 import 'package:shared_preferences/shared_preferences.dart'; // Добавляем импорт
 import 'package:puzzleforchild/screens/settings_screen.dart'; // Импортируем для доступа к ключу
 import 'package:puzzleforchild/services/ad_banner_service.dart';
-
+// import 'package:confetti/confetti.dart'; // <-- Удаляем импорт Confetti
 
 // ===================================
 // Вспомогательные классы - ВСЕ ОНИ ДОЛЖНЫ БЫТЬ ОПРЕДЕЛЕНЫ ЗДЕСЬ, ДО PuzzleScreen
@@ -132,7 +132,13 @@ class GridPainter extends CustomPainter {
 
 class PuzzleScreen extends StatefulWidget {
   final String imageAssetPath;
-  const PuzzleScreen({super.key, required this.imageAssetPath});
+  final String categoryAssetPath; // Добавляем путь к папке категории
+
+  const PuzzleScreen({
+    super.key,
+    required this.imageAssetPath,
+    required this.categoryAssetPath, // Делаем обязательным
+  });
 
   @override
   _PuzzleScreenState createState() => _PuzzleScreenState();
@@ -144,28 +150,29 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
   final Map<int, Offset> _placedPiecesPositions = {};
   final Set<int> _activePiecesIds = {};
   final List<int> _pieceQueueIds = [];
-  final _adBannerService = AdBannerService(); // <-- Оставил, так как в диалоге может быть
-                                            // _adBannerService.createRewardedAd(),
-                                            // но он не используется в данном коде
+  final _adBannerService = AdBannerService();
   Timer? _timer;
-  // int _score = 0; // Удаляем переменную счета
   bool _isGameComplete = false;
   bool _isLoading = true;
-  // Виджет баннера создается один раз и переиспользуется
   Widget? _bannerWidget;
-  int rows = 4; // Будет загружаться из настроек
-  int cols = 4; // Будет загружаться из настроек
+  int rows = 4;
+  int cols = 4;
 
   final GlobalKey _puzzleBoardKey = GlobalKey();
+  String? _currentImagePath; // Для отслеживания текущего пазла
+  List<String> _categoryImagePaths = []; // Список всех изображений в категории
+
 
   @override
   void initState() {
     super.initState();
-    _loadGridSettingsAndImage(); // Новый метод для загрузки настроек и изображения
+    _currentImagePath = widget.imageAssetPath; // Инициализируем текущий путь
+    _loadCategoryImages().then((_) { // Сначала загружаем список всех изображений
+      _loadGridSettingsAndImage();
+    });
     _initializeBannerWidget();
   }
 
-  // Инициализация виджета баннера - создается один раз
   void _initializeBannerWidget() {
     if (_bannerWidget == null) {
       _bannerWidget = _adBannerService.createBannerWidget();
@@ -174,6 +181,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
       }
     }
   }
+
   @override
   void dispose() {
     _timer?.cancel();
@@ -181,35 +189,62 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
     super.dispose();
   }
 
-  // Новый метод для загрузки настроек сетки
+  // Метод для загрузки списка всех изображений из категории
+  Future<void> _loadCategoryImages() async {
+    try {
+      // Извлекаем имя категории из categoryAssetPath
+      // Например, 'assets/images/pets/' -> 'pets'
+      final String categoryName = widget.categoryAssetPath.split('/')[2];
+      final String assetListFilePath = 'assets/asset_lists/$categoryName.txt';
+      final String assetsContent = await rootBundle.loadString(assetListFilePath);
+
+      // Разбиваем содержимое по строкам и отфильтровываем пустые
+      final List<String> assets = assetsContent
+          .split('\n')
+          .map((line) => line.trim())
+          .where((line) => line.isNotEmpty)
+          .toList();
+
+      if (mounted) {
+        setState(() {
+          _categoryImagePaths = assets;
+        });
+      }
+    } catch (e) {
+      print('Error loading category image list: $e');
+      if (mounted) {
+        setState(() {
+          // Возможно, стоит вывести ошибку пользователю
+        });
+      }
+    }
+  }
+
   Future<void> _loadGridSettingsAndImage() async {
     setState(() {
       _isLoading = true;
-    });
-
-    final prefs = await SharedPreferences.getInstance();
-    // Изменено: используем новое имя поля без '_'
-    final int? savedGridSize = prefs.getInt(SettingsScreen.puzzleGridSizeKey);
-    
-    // Устанавливаем rows и cols
-    rows = savedGridSize ?? 4; // Используем сохраненное значение или 4 по умолчанию
-    cols = savedGridSize ?? 4; // Устанавливаем такое же значение для cols
-
-    // Затем продолжаем загружать изображение и разбивать его на кусочки
-    _loadImageAndSplit();
-  }
-
-  Future<void> _loadImageAndSplit() async {
-    setState(() {
-      // Это часть общего процесса загрузки, поэтому isLoading уже true
-      _placedPiecesPositions.clear();
-      _activePiecesIds.clear();
-      _pieceQueueIds.clear();
-      // _score = 0; // Удаляем обнуление счета
       _isGameComplete = false;
     });
 
-    final ByteData data = await rootBundle.load(widget.imageAssetPath);
+    final prefs = await SharedPreferences.getInstance();
+    final int? savedGridSize = prefs.getInt(SettingsScreen.puzzleGridSizeKey);
+    
+    rows = savedGridSize ?? 4;
+    cols = savedGridSize ?? 4;
+
+    await _loadImageAndSplit(_currentImagePath!); // Используем _currentImagePath
+  }
+
+  Future<void> _loadImageAndSplit(String imagePath) async {
+    setState(() {
+      _placedPiecesPositions.clear();
+      _activePiecesIds.clear();
+      _pieceQueueIds.clear();
+      _isGameComplete = false;
+      _currentImagePath = imagePath; // Обновляем текущий путь изображения
+    });
+
+    final ByteData data = await rootBundle.load(imagePath);
     _image = await decodeImageFromList(data.buffer.asUint8List());
 
     if (_image != null) {
@@ -233,7 +268,6 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
   List<PuzzlePiece> _splitImageIntoPieces(ui.Image image) {
     final List<PuzzlePiece> pieces = [];
 
-    // Используем `rows` и `cols`, загруженные из настроек
     final double actualImageWidth = (image.width / cols).floorToDouble() * cols;
     final double actualImageHeight = (image.height / rows).floorToDouble() * rows;
 
@@ -254,12 +288,12 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
           r / rows,
         );
 
-        pieces.add(PuzzlePiece( // Открывающая скобка конструктора
+        pieces.add(PuzzlePiece(
           id: id,
           image: image,
           sourceRect: sourceRect,
           correctRelativePosition: correctRelativePosition,
-        )); // <--- Правильно закрыта скобка и добавлена точка с запятой
+        ));
       }
     }
     return pieces;
@@ -268,24 +302,9 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
   void _checkGameCompletion() {
     if (_placedPiecesPositions.length == _allPieces.length && !_isGameComplete) {
       bool allPiecesAreCorrectlyPositioned = true;
-      // Мы уже знаем, что _placedPiecesPositions содержит только правильно
-      // размещенные куски. Но для дополнительной проверки, если нужно,
-      // можно сравнить каждую позицию.
-      // Если же логика onPiecePlaced гарантирует, что мы добавляем Оффсет
-      // именно в correctAbsolutePositionOnBoard, то этой проверки достаточно.
 
-      // Для строгой проверки, что каждый кусок действительно находится в
-      // правильной позиции (например, чтобы поймать баги или если threshold большой)
-      // необходимо получать RenderBox и пересчитывать позиции.
-      // Для простоты, если кусок помещается в _placedPiecesPositions,
-      // мы считаем его правильно расположенным.
-
-      // Однако, если вы хотите более строгую проверку по расстоянию,
-      // как в _onPiecePlaced, то ее можно добавить сюда:
       final RenderBox? puzzleBoardRenderBox = _puzzleBoardKey.currentContext?.findRenderObject() as RenderBox?;
       if (puzzleBoardRenderBox == null) {
-        // Если не можем получить RenderBox, не можем проверить позиции строго.
-        // Допустим, что все правильно.
         allPiecesAreCorrectlyPositioned = true;
       } else {
         final Size actualPuzzleBoardSize = puzzleBoardRenderBox.size;
@@ -300,9 +319,8 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
             piece.correctRelativePosition.dy * actualPuzzleBoardSize.height,
           );
 
-          // Проверяем, что размещенная позиция очень близка к идеально правильной
           final double distance = (actualPlacedPosition - correctAbsolutePositionOnBoard).distance;
-          if (distance > 1.0) { // Очень маленький порог для идеального совпадения
+          if (distance > 1.0) {
             allPiecesAreCorrectlyPositioned = false;
             break;
           }
@@ -316,24 +334,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
         });
 
         _timer?.cancel();
-
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Поздравляем!'),
-            // content: Text('Вы собрали пазл!\nВаш счет: $_score'), // Удаляем отображение счета
-            content: const Text('Вы собрали пазл!'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  _resetGame();
-                },
-                child: const Text('Играть снова'),
-              ),
-            ],
-          ),
-        );
+        // Диалог убран, надпись и кнопки будут показаны в build
       }
     }
   }
@@ -345,14 +346,47 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
       _placedPiecesPositions.clear();
       _activePiecesIds.clear();
       _pieceQueueIds.clear();
-      // _score = 0; // Удаляем обнуление счета
       _isGameComplete = false;
       _isLoading = true;
     });
-    _loadGridSettingsAndImage(); // Загружаем настройки и изображение
+    // Загружаем новый случайный пазл
+    _loadNewRandomPuzzle();
   }
 
+  void _loadNewRandomPuzzle() {
+    if (_categoryImagePaths.isEmpty) {
+      print("No images in category or not loaded.");
+      _loadCategoryImages().then((_) => _selectAndLoadRandomPuzzle());
+    } else {
+      _selectAndLoadRandomPuzzle();
+    }
+  }
+
+  void _selectAndLoadRandomPuzzle() {
+    if (_categoryImagePaths.isEmpty) return;
+
+    String previousImagePath = _currentImagePath!; // Сохраняем текущий пазл
+    String newImagePath = previousImagePath;
+    final _random = Random();
+
+    // Ищем новый пазл, который не является текущим
+    if (_categoryImagePaths.length > 1) {
+      while (newImagePath == previousImagePath) {
+        newImagePath = _categoryImagePaths[_random.nextInt(_categoryImagePaths.length)];
+      }
+    } else {
+      // Если только одна картинка, то просто перезапускаем её
+      newImagePath = _categoryImagePaths.first;
+    }
+
+    _loadImageAndSplit(newImagePath).then((_) {
+      _loadGridSettingsAndImage(); // Перезагружаем настройки и пазл
+    });
+  }
+
+
   void _onPiecePlaced(int pieceId, Offset globalDropPosition) {
+    if (_isGameComplete) return;
 
     PuzzlePiece currentPiece = _allPieces.firstWhere((p) => p.id == pieceId);
 
@@ -385,30 +419,27 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
 
     final double distance = (droppedPieceCenter - correctPositionCenter).distance;
 
-    const double threshold = 50.0; // Порог для "прилипания"
+    const double threshold = 50.0;
 
 
     if (distance < threshold) {
       setState(() {
         _activePiecesIds.remove(pieceId);
         _placedPiecesPositions[pieceId] = correctAbsolutePositionOnBoard;
-        // _score += 100; // Удаляем начисление очков
         if (_pieceQueueIds.isNotEmpty) {
           _activePiecesIds.add(_pieceQueueIds.removeAt(0));
         }
         _checkGameCompletion();
       });
     } else {
-      setState(() {
-        // _score = max(0, _score - 10); // Удаляем вычитание очков
-      });
+      // Ничего не делаем при неправильном ходе
     }
   }
 
   @override
   Widget build(BuildContext context) {
     if (_image == null && !_isLoading) {
-      _loadGridSettingsAndImage(); // Повторно вызываем загрузку, если контекст меняется или изображение не загружено
+      // _loadGridSettingsAndImage(); // Уже вызывается в initState через _loadCategoryImages
       return const Center(child: CircularProgressIndicator());
     }
 
@@ -416,38 +447,25 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
     final double screenHeight = MediaQuery.of(context).size.height;
     final double appBarHeight = AppBar().preferredSize.height;
     final double bottomPadding = MediaQuery.of(context).padding.bottom;
-    final double topPadding = MediaQuery.of(context).padding.top; // Для safe area сверху
+    final double topPadding = MediaQuery.of(context).padding.top;
 
     final double availableBodyHeight = screenHeight - appBarHeight - bottomPadding - topPadding;
 
-    // --- РАСЧЕТ РАЗМЕРОВ ---
-    // Максимальная ширина, которую может занять центральная доска пазла
     final double maxPuzzleBoardWidth = screenWidth * 0.95; 
 
-    // Высота нижней панели должна вмещать текст и РЯД с кусочками.
-    // Сначала оценим, какая будет высота кусочка:
-    // Мы хотим, чтобы кусочки внизу были ТАКОГО ЖЕ размера, как и кусочки в центральной части.
-    // Значит, нам нужно сначала определить размер кусочков, который может быть в центральной части.
-    // Допустим, центральная часть займет 70% доступной высоты
     final double estimatedAvailableHeightForPuzzleBoard = availableBodyHeight * 0.7;
 
-    // Расчет размера кусочка, исходя из этого оцененного пространства
     double estimatedCandidatePieceSideForBoard = min(maxPuzzleBoardWidth / cols, estimatedAvailableHeightForPuzzleBoard / rows);
     final Size estimatedPieceRenderSize = Size.square(max(50.0, estimatedCandidatePieceSideForBoard));
 
 
-    // Высота нижней панели: текст + отступы + высота одного кусочка
-    const double textContentHeight = 16.0 + (2 * 8.0); // fontSize = 16, padding = 8
-    const double rowOuterPadding = 8.0; // Padding вокруг Row
+    const double textContentHeight = 16.0 + (2 * 8.0);
+    const double rowOuterPadding = 8.0;
     final double dynamicTrayHeight = textContentHeight + rowOuterPadding + estimatedPieceRenderSize.height + rowOuterPadding;
 
 
-    // --- ПЕРЕРАСЧЕТ ДЛЯ ЦЕНТРАЛЬНОЙ ОБЛАСТИ ПАЗЛА ---
-    // Теперь, когда у нас есть окончательная высота трея,
-    // вычисляем точное доступное пространство для центрального пазла.
     final double actualAvailableHeightForPuzzleBoard = availableBodyHeight - dynamicTrayHeight;
 
-    // Финальный расчет размера кусочков и всей доски пазла
     double finalCandidatePieceSide = min(maxPuzzleBoardWidth / cols, actualAvailableHeightForPuzzleBoard / rows);
     final Size finalActualPieceRenderSize = Size.square(max(50.0, finalCandidatePieceSide));
 
@@ -460,21 +478,6 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Детский пазл'),
-        // actions: [ // Удаляем отображение счета
-        //   Padding(
-        //     padding: const EdgeInsets.all(8.0),
-        //     child: Row(
-        //       children: [
-        //         const Icon(Icons.star, color: Colors.yellow),
-        //         const SizedBox(width: 4),
-        //         Text(
-        //           '$_score',
-        //           style: const TextStyle(fontSize: 20),
-        //         ),
-        //       ],
-        //     ),
-        //   ),
-        // ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -496,88 +499,174 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                                 painter: GridPainter(rows: rows, cols: cols, actualPuzzleBoardSize: finalActualTotalPuzzleBoardSize),
                               ),
                             ),
-                            // Фоновое изображение (очень прозрачное)
+                            // Фоновое изображение (или полная картинка после завершения)
                             Positioned.fill(
                               child: Opacity(
-                                opacity: 0.1,
+                                opacity: _isGameComplete ? 1.0 : 0.1, // Полная картинка при завершении
                                 child: RawImage(
                                   image: _image,
                                   fit: BoxFit.fill,
                                 ),
                               ),
                             ),
-                            // Размещенные кусочки
-                            ..._placedPiecesPositions.entries.map((entry) {
-                              final pieceId = entry.key;
-                              final position = entry.value;
-                              final piece = _allPieces.firstWhere((p) => p.id == pieceId);
-                              return Positioned(
-                                left: position.dx,
-                                top: position.dy,
-                                child: ImagePiece(piece: piece, pieceRenderSize: finalActualPieceRenderSize), // Используем finalActualPieceRenderSize
-                              );
-                            }).toList(),
-                            // Область для размещения кусочков (DragTarget), занимающая весь Stack
-                            Positioned.fill(
-                              child: DragTarget<int>(
-                                onWillAccept: (data) => true,
-                                onAcceptWithDetails: (details) {
-                                  _onPiecePlaced(details.data, details.offset);
-                                },
-                                builder: (context, candidateData, rejectedData) {
-                                  return Container();
-                                },
+                            
+                            // Размещенные кусочки (только если игра не завершена)
+                            if (!_isGameComplete)
+                              ..._placedPiecesPositions.entries.map((entry) {
+                                final pieceId = entry.key;
+                                final position = entry.value;
+                                final piece = _allPieces.firstWhere((p) => p.id == pieceId);
+                                return Positioned(
+                                  left: position.dx,
+                                  top: position.dy,
+                                  child: ImagePiece(piece: piece, pieceRenderSize: finalActualPieceRenderSize),
+                                );
+                              }).toList(),
+
+                            // Надпись "Поздравляю!"
+                            if (_isGameComplete)
+                              Center(
+                                child: Container(
+                                  padding: const EdgeInsets.all(16.0),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withOpacity(0.5),
+                                    borderRadius: BorderRadius.circular(10.0),
+                                  ),
+                                  child: const Text(
+                                    'Поздравляю!',
+                                    style: TextStyle(
+                                      fontSize: 36,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
+                            
+                            // Область для размещения кусочков (DragTarget), занимающая весь Stack
+                            // Активна только если игра не завершена
+                            if (!_isGameComplete)
+                              Positioned.fill(
+                                child: DragTarget<int>(
+                                  onWillAccept: (data) => true,
+                                  onAcceptWithDetails: (details) {
+                                    _onPiecePlaced(details.data, details.offset);
+                                  },
+                                  builder: (context, candidateData, rejectedData) {
+                                    return Container();
+                                  },
+                                ),
+                              ),
                           ],
                         ),
                       ),
                     ),
                   ),
                 ),
-                // Нижняя часть - доступные кусочки
+                // Нижняя часть - доступные кусочки или кнопки управления после завершения
                 Container(
-                  height: dynamicTrayHeight, // <--- ИСПОЛЬЗУЕМ ДИНАМИЧЕСКУЮ ВЫСОТУ
+                  height: dynamicTrayHeight,
                   color: Colors.grey[100],
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          'Доступные кусочки (${_activePiecesIds.length})',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Row(
+                  child: _isGameComplete
+                      ? Row( // Две кнопки после завершения игры
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: _activePiecesIds.map((pieceId) {
-                            PuzzlePiece piece = _allPieces.firstWhere((p) => p.id == pieceId);
-                            // Здесь ImagePiece всегда будет отрисован с finalActualPieceRenderSize
-                            return Expanded(
-                              child: Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(4.0),
-                                  child: Draggable<int>(
-                                    data: piece.id,
-                                    feedback: ImagePiece(piece: piece, opacity: 0.7, pieceRenderSize: finalActualPieceRenderSize), // Используем finalActualPieceRenderSize
-                                    childWhenDragging: ImagePiece(piece: piece, opacity: 0.3, pieceRenderSize: finalActualPieceRenderSize), // Используем finalActualPieceRenderSize
-                                    child: ImagePiece(piece: piece, pieceRenderSize: finalActualPieceRenderSize), // Используем finalActualPieceRenderSize
+                          children: [
+                            Expanded(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Text(
+                                    'На главную',
+                                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87),
                                   ),
+                                  const SizedBox(height: 8),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.popUntil(context, (route) => route.isFirst);
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.redAccent, // Более яркий красный
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(15.0), // Обтекаемая форма
+                                      ),
+                                      padding: const EdgeInsets.all(16.0),
+                                    ),
+                                    child: const Icon(Icons.stop, color: Colors.white, size: 40),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Expanded(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Text(
+                                    'Продолжить',
+                                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  ElevatedButton(
+                                    onPressed: _resetGame,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.lightGreen, // Более яркий зеленый
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(15.0), // Обтекаемая форма
+                                      ),
+                                      padding: const EdgeInsets.all(16.0),
+                                    ),
+                                    child: const Icon(Icons.play_arrow, color: Colors.white, size: 40),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        )
+                      : Column( // Доступные кусочки во время игры
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                'Доступные кусочки (${_activePiecesIds.length})',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                            );
-                          }).toList(),
+                            ),
+                            Expanded(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                children: _activePiecesIds.map((pieceId) {
+                                  PuzzlePiece piece = _allPieces.firstWhere((p) => p.id == pieceId);
+                                  return Expanded(
+                                    child: Center(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(4.0),
+                                        child: Draggable<int>(
+                                          data: piece.id,
+                                          feedback: ImagePiece(piece: piece, opacity: 0.7, pieceRenderSize: finalActualPieceRenderSize),
+                                          childWhenDragging: ImagePiece(piece: piece, opacity: 0.3, pieceRenderSize: finalActualPieceRenderSize),
+                                          child: ImagePiece(piece: piece, pieceRenderSize: finalActualPieceRenderSize),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
-                  ),
                 ),
-                const SizedBox(height: 70.0), // Добавленный отступ 70 пикселей
-
+                        // Блок рекламы - используем созданный один раз виджет
+          if (_bannerWidget != null) ...[
+            _bannerWidget!,
+          ] else ...[
+            // Показываем загрузку, если виджет еще не создан
+            const SizedBox(
+              height: 50,
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          ],
               ],
             ),
 
