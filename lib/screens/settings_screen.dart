@@ -91,7 +91,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Настройки пазла'),
+        title: const Text('Настройки мозаики'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

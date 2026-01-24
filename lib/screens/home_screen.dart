@@ -38,7 +38,7 @@ class HomeScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
-              child: _buildCategoryButton(context, 'Добашние животные', 'pets'),
+              child: _buildCategoryButton(context, 'Домашние животные', 'pets'),
             ),
             const SizedBox(height: 16),
             Expanded(
@@ -50,7 +50,7 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: _buildCategoryButton(context, 'Дике животные Африки', 'african_animals'),
+              child: _buildCategoryButton(context, 'Дикие животные Африки', 'african_animals'),
             ),
           ],
         ),
