@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:puzzleforchild/screens/home_screen.dart'; // Предположим, ProjectName - это название вашего проекта в pubspec.yaml
+import 'package:puzzlebirds/screens/home_screen.dart'; // Предположим, ProjectName - это название вашего проекта в pubspec.yaml
 
 void main() async {
   runApp(const MyApp());

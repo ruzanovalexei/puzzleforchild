@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'dart:typed_data';
 import 'package:shared_preferences/shared_preferences.dart'; // Добавляем импорт
-import 'package:puzzleforchild/screens/settings_screen.dart'; // Импортируем для доступа к ключу
-import 'package:puzzleforchild/services/ad_banner_service.dart';
+import 'package:puzzlebirds/screens/settings_screen.dart'; // Импортируем для доступа к ключу
+import 'package:puzzlebirds/services/ad_banner_service.dart';
 import 'package:path/path.dart' as p; // Импортируем пакет path
 // import 'package:confetti/confetti.dart'; // <-- Удаляем импорт Confetti
 

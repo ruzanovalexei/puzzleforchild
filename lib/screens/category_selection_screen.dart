@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Нужен для rootBundle
-import 'package:puzzleforchild/screens/puzzle_screen.dart';
+import 'package:puzzlebirds/screens/puzzle_screen.dart';
 
 class CategorySelectionScreen extends StatefulWidget {
   final String categoryTitle;

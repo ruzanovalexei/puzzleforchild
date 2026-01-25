@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.ruzanov.puzzleforchild"
+    namespace = "com.ruzanov.puzzlebirds"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -21,12 +21,12 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.ruzanov.puzzleforchild"
+        applicationId = "com.ruzanov.puzzlebirds"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = 100001
+        versionCode = 100000
         versionName = flutter.versionName
 
         manifestPlaceholders["yandexMobileAdsAppId"] = "18531801"
