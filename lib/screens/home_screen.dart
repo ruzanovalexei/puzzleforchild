@@ -1,8 +1,8 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Добавляем импорт для rootBundle
-import 'package:puzzlebirds/screens/category_selection_screen.dart';
-import 'package:puzzlebirds/screens/settings_screen.dart';
+import 'package:puzzleforchild/screens/category_selection_screen.dart';
+import 'package:puzzleforchild/screens/settings_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});

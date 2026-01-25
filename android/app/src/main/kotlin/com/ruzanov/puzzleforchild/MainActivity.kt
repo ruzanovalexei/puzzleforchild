@@ -1,4 +1,4 @@
-package com.ruzanov.puzzlebirds
+package com.ruzanov.puzzleforchild
 
 import io.flutter.embedding.android.FlutterActivity
 
