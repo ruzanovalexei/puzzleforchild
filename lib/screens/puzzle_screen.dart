@@ -390,6 +390,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
 
 
   void _onPiecePlaced(int pieceId, Offset globalDropPosition) {
+    
     if (_isGameComplete) return;
 
     PuzzlePiece currentPiece = _allPieces.firstWhere((p) => p.id == pieceId);
@@ -423,8 +424,12 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
 
     final double distance = (droppedPieceCenter - correctPositionCenter).distance;
 
-    const double threshold = 50.0;
+   
+    // const double threshold = 50.0;
 
+    // Расчетное значение threshold: 200 / savedGridSize
+    // savedGridSize хранится в переменной `rows` (которая равна `cols`)
+    final double threshold = 200.0 / (rows*2); // Используем `rows` как `savedGridSize`
 
     if (distance < threshold) {
       setState(() {
