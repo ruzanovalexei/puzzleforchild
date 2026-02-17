@@ -26,7 +26,7 @@ android {
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = 100001
+        versionCode = 100002
         versionName = flutter.versionName
 
         manifestPlaceholders["yandexMobileAdsAppId"] = "18531801"
