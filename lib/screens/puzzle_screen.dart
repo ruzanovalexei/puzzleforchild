@@ -183,9 +183,9 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
         setState(() {});
       }
     }
-    // Запускаем таймер обновления баннера каждые 35 секунд
+    // Запускаем таймер обновления баннера каждые 4 секунды
     _bannerRefreshTimer?.cancel();
-    _bannerRefreshTimer = Timer.periodic(const Duration(seconds: 35), (timer) {
+    _bannerRefreshTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       if (mounted && !_isGameComplete) {
         _refreshBanner();
       }
