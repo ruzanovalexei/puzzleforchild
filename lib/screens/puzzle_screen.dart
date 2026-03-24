@@ -153,6 +153,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
   final List<int> _pieceQueueIds = [];
   final _adBannerService = AdBannerService();
   Timer? _timer;
+  Timer? _bannerRefreshTimer;
   bool _isGameComplete = false;
   bool _isLoading = true;
   Widget? _bannerWidget;
@@ -182,11 +183,26 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
         setState(() {});
       }
     }
+    // Запускаем таймер обновления баннера каждые 35 секунд
+    _bannerRefreshTimer?.cancel();
+    _bannerRefreshTimer = Timer.periodic(const Duration(seconds: 35), (timer) {
+      if (mounted && !_isGameComplete) {
+        _refreshBanner();
+      }
+    });
+  }
+
+  void _refreshBanner() {
+    _bannerWidget = _adBannerService.createBannerWidget();
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+    _bannerRefreshTimer?.cancel();
     _bannerWidget = null;
     super.dispose();
   }
@@ -213,7 +229,6 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
         });
       }
     } catch (e) {
-      print('Error loading category image list: $e');
       if (mounted) {
         setState(() {
           // Возможно, стоит вывести ошибку пользователю
@@ -359,7 +374,6 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
 
   void _loadNewRandomPuzzle() {
     if (_categoryImagePaths.isEmpty) {
-      print("No images in category or not loaded.");
       _loadCategoryImages().then((_) => _selectAndLoadRandomPuzzle());
     } else {
       _selectAndLoadRandomPuzzle();
@@ -390,7 +404,6 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
 
 
   void _onPiecePlaced(int pieceId, Offset globalDropPosition) {
-    
     if (_isGameComplete) return;
 
     PuzzlePiece currentPiece = _allPieces.firstWhere((p) => p.id == pieceId);
@@ -424,12 +437,12 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
 
     final double distance = (droppedPieceCenter - correctPositionCenter).distance;
 
-   
-    // const double threshold = 50.0;
+      // const double threshold = 50.0;
 
     // Расчетное значение threshold: 200 / savedGridSize
     // savedGridSize хранится в переменной `rows` (которая равна `cols`)
     final double threshold = 200.0 / (rows*2); // Используем `rows` как `savedGridSize`
+
 
     if (distance < threshold) {
       setState(() {
@@ -494,7 +507,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
               children: [
                 Center(
                   child: SizedBox(
-                    width: screenWidth / 2, // Ширина в половину экрана
+                    width: screenWidth, // Ширина в половину экрана
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: FittedBox(

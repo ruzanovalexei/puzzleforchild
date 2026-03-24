@@ -17,8 +17,8 @@ class AdBannerService {
   static const Duration _cleanupInterval = Duration(seconds: 30);
   // Список adUnitId для round-robin ротации баннеров DEV
   static const List<String> _bannerAdUnitIds = [
-    'R-M-18531801-1',
-    'R-M-18531801-2',
+    'R-M-18531801-3',
+    'R-M-18531801-3',
     'R-M-18531801-3',
   ];
   // Список adUnitId для round-robin ротации баннеров Прод R-M-17946414-6
