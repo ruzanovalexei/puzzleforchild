@@ -14,6 +14,7 @@ class LocaleService {
   static const List<Locale> supportedLocales = [
     Locale('ru'),
     Locale('en'),
+    Locale('zh'),
   ];
 
   Future<Locale> getLocale() async {

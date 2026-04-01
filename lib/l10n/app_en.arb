@@ -92,5 +92,11 @@
   "animal_elephant": "Elephant",
   "animal_ostrich": "Ostrich",
   "animal_meerkat": "Meerkat",
-  "animal_chimpanzee": "Chimpanzee"
+  "animal_chimpanzee": "Chimpanzee",
+  "language": "Language",
+  "russian": "Russian",
+  "english": "English",
+  "chinese": "Chinese",
+  "system": "System",
+  "emptyCategory": "No images in this category yet"
 }

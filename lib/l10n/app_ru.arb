@@ -105,6 +105,10 @@
   "@english": {
     "description": "English"
   },
+  "chinese": "中文",
+  "@chinese": {
+    "description": "中文"
+  },
   "system": "Системный",
   "@system": {
     "description": "Системный язык"

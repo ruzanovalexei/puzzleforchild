@@ -87,6 +87,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get english => 'English';
 
   @override
+  String get chinese => '中文';
+
+  @override
   String get system => 'Системный';
 
   @override

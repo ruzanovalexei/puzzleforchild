@@ -75,19 +75,22 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get emptyCategory => 'В этой категории пока нет изображений';
+  String get emptyCategory => 'No images in this category yet';
 
   @override
-  String get language => 'Язык';
+  String get language => 'Language';
 
   @override
-  String get russian => 'Русский';
+  String get russian => 'Russian';
 
   @override
   String get english => 'English';
 
   @override
-  String get system => 'Системный';
+  String get chinese => 'Chinese';
+
+  @override
+  String get system => 'System';
 
   @override
   String get gridWillBe => 'Grid will be';
