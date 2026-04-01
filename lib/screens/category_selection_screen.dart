@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // Нужен для rootBundle
+import 'package:flutter/services.dart';
 import 'package:puzzleforchild/screens/puzzle_screen.dart';
+import 'package:puzzleforchild/l10n/app_localizations.dart';
 
 class CategorySelectionScreen extends StatefulWidget {
   final String categoryTitle;
@@ -28,7 +29,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
   }
 
   Future<void> _loadCategoryImages() async {
-    print('[_loadCategoryImages] Начало загрузки категории: ${widget.categoryAssetPath}');
+    // print('[_loadCategoryImages] Начало загрузки категории: ${widget.categoryAssetPath}');
     setState(() {
       _isLoading = true;
       _error = null;
@@ -40,9 +41,9 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
       final String categoryName = widget.categoryAssetPath.split('/')[2]; // Получаем 'pets', 'farm_animals' и т.д.
       final String assetListFilePath = 'assets/asset_lists/$categoryName.txt';
 
-      print('[_loadCategoryImages] Попытка загрузить список ассетов из: $assetListFilePath');
+      // print('[_loadCategoryImages] Попытка загрузить список ассетов из: $assetListFilePath');
       final String assetsContent = await rootBundle.loadString(assetListFilePath);
-      print('[_loadCategoryImages] Список ассетов для категории $categoryName загружен успешно.');
+      // print('[_loadCategoryImages] Список ассетов для категории $categoryName загружен успешно.');
 
       // Разбиваем содержимое по строкам и отфильтровываем пустые
       final List<String> assets = assetsContent
@@ -57,7 +58,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
           _isLoading = false;
         });
       }
-      print('[_loadCategoryImages] Загружено ${_imageAssets.length} ассетов для категории: ${widget.categoryAssetPath}');
+      // print('[_loadCategoryImages] Загружено ${_imageAssets.length} ассетов для категории: ${widget.categoryAssetPath}');
 
     } catch (e, stackTrace) {
       if (mounted) {
@@ -66,13 +67,15 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
           _isLoading = false;
         });
       }
-      print('[_loadCategoryImages] Error loading asset list file: $e');
-      print('[_loadCategoryImages] Stacktrace: $stackTrace');
+      // print('[_loadCategoryImages] Error loading asset list file: $e');
+      // print('[_loadCategoryImages] Stacktrace: $stackTrace');
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.categoryTitle),
@@ -96,14 +99,14 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
                             });
                             _loadCategoryImages();
                           },
-                          child: const Text('Повторить попытку'),
+                          child: Text(l10n.retryButton),
                         ),
                       ],
                     ),
                   ),
                 )
               : _imageAssets.isEmpty
-                  ? Center(child: Text('В этой категории пока нет изображений: ${widget.categoryAssetPath}'))
+                  ? Center(child: Text(l10n.emptyCategory))
                   : GridView.builder(
                       padding: const EdgeInsets.all(16.0),
                       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(

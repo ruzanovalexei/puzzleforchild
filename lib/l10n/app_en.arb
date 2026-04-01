@@ -1,0 +1,34 @@
+{
+  "@@locale": "en",
+  "appTitle": "Mosaic. Animals",
+  "categorySelectionTitle": "Select Animal Category",
+  "petsCategory": "Pets",
+  "farmAnimalsCategory": "Farm Animals",
+  "wildAnimalsCategory": "Wild Animals of Russia",
+  "africanAnimalsCategory": "Wild Animals of Africa",
+  "settingsTitle": "Puzzle Settings",
+  "saveButton": "Save",
+  "backButton": "Back",
+  "goToMain": "Main Menu",
+  "continueButton": "Continue",
+  "errorLoadingImages": "Error loading image list",
+  "retryButton": "Retry",
+  "adNotAvailable": "Ad not available",
+  "adNotAvailableMessage": "No ad to display: check your internet connection or disable ad blocker",
+  "adLoadError": "Ad loading error",
+  "okButton": "OK",
+  "gridSize": "Grid Size",
+  "opacity": "Opacity",
+  "congratulations": "Hooray! Done!",
+  "availablePieces": "Available pieces ({count})",
+  "@availablePieces": {
+    "description": "Number of available pieces",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "gridWillBe": "Grid will be",
+  "currentOpacity": "Current opacity"
+}

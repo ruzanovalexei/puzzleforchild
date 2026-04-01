@@ -4,11 +4,11 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'dart:typed_data';
-import 'package:shared_preferences/shared_preferences.dart'; // Добавляем импорт
-import 'package:puzzleforchild/screens/settings_screen.dart'; // Импортируем для доступа к ключу
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:puzzleforchild/screens/settings_screen.dart';
 import 'package:puzzleforchild/services/ad_banner_service.dart';
-import 'package:path/path.dart' as p; // Импортируем пакет path
-// import 'package:confetti/confetti.dart'; // <-- Удаляем импорт Confetti
+import 'package:puzzleforchild/l10n/app_localizations.dart';
+import 'package:path/path.dart' as p;
 
 // ===================================
 // Вспомогательные классы - ВСЕ ОНИ ДОЛЖНЫ БЫТЬ ОПРЕДЕЛЕНЫ ЗДЕСЬ, ДО PuzzleScreen
@@ -460,6 +460,8 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     if (_image == null && !_isLoading) {
       // _loadGridSettingsAndImage(); // Уже вызывается в initState через _loadCategoryImages
       return const Center(child: CircularProgressIndicator());
@@ -499,7 +501,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('назад'),
+        title: Text(l10n.backButton),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -583,9 +585,9 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                                     color: Colors.black.withOpacity(0.5),
                                     borderRadius: BorderRadius.circular(10.0),
                                   ),
-                                  child: const Text(
-                                    'Ура! Получилось!',
-                                    style: TextStyle(
+                                  child: Text(
+                                    l10n.congratulations,
+                                    style: const TextStyle(
                                       fontSize: 36,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,
@@ -627,9 +629,9 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Text(
-                                    'На главную',
-                                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87),
+                                  Text(
+                                    l10n.goToMain,
+                                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87),
                                   ),
                                   const SizedBox(height: 8),
                                   ElevatedButton(
@@ -652,9 +654,9 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Text(
-                                    'Продолжить',
-                                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87),
+                                  Text(
+                                    l10n.continueButton,
+                                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87),
                                   ),
                                   const SizedBox(height: 8),
                                   ElevatedButton(
@@ -678,7 +680,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                             Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Text(
-                                'Доступные кусочки (${_activePiecesIds.length})',
+                                l10n.availablePieces(_activePiecesIds.length),
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,

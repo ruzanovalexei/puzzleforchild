@@ -1,0 +1,120 @@
+{
+  "@@locale": "ru",
+  "appTitle": "Мозаика. Животные",
+  "@appTitle": {
+    "description": "Название приложения"
+  },
+  "categorySelectionTitle": "Выбор категории животных",
+  "@categorySelectionTitle": {
+    "description": "Заголовок экрана выбора категории"
+  },
+  "petsCategory": "Домашние животные",
+  "@petsCategory": {
+    "description": "Название категории домашних животных"
+  },
+  "farmAnimalsCategory": "Деревенские животные",
+  "@farmAnimalsCategory": {
+    "description": "Название категории деревенских животных"
+  },
+  "wildAnimalsCategory": "Дикие животные России",
+  "@wildAnimalsCategory": {
+    "description": "Название категории диких животных России"
+  },
+  "africanAnimalsCategory": "Дикие животные Африки",
+  "@africanAnimalsCategory": {
+    "description": "Название категории диких животных Африки"
+  },
+  "settingsTitle": "Настройки мозаики",
+  "@settingsTitle": {
+    "description": "Заголовок экрана настроек"
+  },
+  "saveButton": "Сохранить",
+  "@saveButton": {
+    "description": "Текст кнопки сохранения"
+  },
+  "backButton": "назад",
+  "@backButton": {
+    "description": "Текст кнопки возврата"
+  },
+  "goToMain": "На главную",
+  "@goToMain": {
+    "description": "Текст кнопки перехода на главный экран"
+  },
+  "continueButton": "Продолжить",
+  "@continueButton": {
+    "description": "Текст кнопки продолжения"
+  },
+  "errorLoadingImages": "Ошибка загрузки списка изображений",
+  "@errorLoadingImages": {
+    "description": "Сообщение об ошибке загрузки изображений"
+  },
+  "retryButton": "Повторить попытку",
+  "@retryButton": {
+    "description": "Текст кнопки повтора"
+  },
+  "adNotAvailable": "Реклама недоступна",
+  "@adNotAvailable": {
+    "description": "Заголовок диалога о недоступности рекламы"
+  },
+  "adNotAvailableMessage": "Нет рекламы для показа: проверьте соединение с интернетом или отключите блокировщик рекламы",
+  "@adNotAvailableMessage": {
+    "description": "Сообщение о недоступности рекламы"
+  },
+  "adLoadError": "Ошибка загрузки рекламы",
+  "@adLoadError": {
+    "description": "Заголовок диалога об ошибке загрузки рекламы"
+  },
+  "okButton": "Понятно",
+  "@okButton": {
+    "description": "Текст кнопки OK"
+  },
+  "gridSize": "Размер сетки",
+  "@gridSize": {
+    "description": "Настройка размера сетки пазла"
+  },
+  "opacity": "Прозрачность",
+  "@opacity": {
+    "description": "Настройка прозрачности"
+  },
+  "congratulations": "Ура! Получилось!",
+  "@congratulations": {
+    "description": "Поздравление при завершении пазла"
+  },
+  "availablePieces": "Доступные кусочки ({count})",
+  "@availablePieces": {
+    "description": "Количество доступных кусочков",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "emptyCategory": "В этой категории пока нет изображений",
+  "@emptyCategory": {
+    "description": "Сообщение о пустой категории"
+  },
+  "language": "Язык",
+  "@language": {
+    "description": "Настройка выбора языка"
+  },
+  "russian": "Русский",
+  "@russian": {
+    "description": "Русский язык"
+  },
+  "english": "Английский",
+  "@english": {
+    "description": "Английский язык"
+  },
+  "system": "Системный",
+  "@system": {
+    "description": "Системный язык"
+  },
+  "gridWillBe": "Сетка будет",
+  "@gridWillBe": {
+    "description": "Подпись размера сетки"
+  },
+  "currentOpacity": "Текущая прозрачность",
+  "@currentOpacity": {
+    "description": "Подпись прозрачности"
+  }
+}

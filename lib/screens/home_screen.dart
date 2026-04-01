@@ -1,24 +1,27 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // Добавляем импорт для rootBundle
+import 'package:flutter/services.dart';
 import 'package:puzzleforchild/screens/category_selection_screen.dart';
 import 'package:puzzleforchild/screens/settings_screen.dart';
+import 'package:puzzleforchild/l10n/app_localizations.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Выбор категории животных',
-          style: TextStyle(
-            fontSize: 24, // Увеличиваем размер шрифта
+        title: Text(
+          l10n.categorySelectionTitle,
+          style: const TextStyle(
+            fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
         ),
-        centerTitle: true, // Выравниваем заголовок по центру
+        centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -38,19 +41,19 @@ class HomeScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
-              child: _buildCategoryButton(context, 'Домашние животные', 'pets'),
+              child: _buildCategoryButton(context, l10n.petsCategory, 'pets'),
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: _buildCategoryButton(context, 'Деревенские животные', 'farm_animals'),
+              child: _buildCategoryButton(context, l10n.farmAnimalsCategory, 'farm_animals'),
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: _buildCategoryButton(context, 'Дикие животные России', 'wild_animals'),
+              child: _buildCategoryButton(context, l10n.wildAnimalsCategory, 'wild_animals'),
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: _buildCategoryButton(context, 'Дикие животные Африки', 'african_animals'),
+              child: _buildCategoryButton(context, l10n.africanAnimalsCategory, 'african_animals'),
             ),
           ],
         ),
@@ -65,8 +68,8 @@ class HomeScreen extends StatelessWidget {
         String? randomImagePath;
         if (snapshot.connectionState == ConnectionState.done && snapshot.hasData && snapshot.data!.isNotEmpty) {
           final List<String> images = snapshot.data!;
-          final _random = Random();
-          randomImagePath = images[_random.nextInt(images.length)];
+          final random = Random();
+          randomImagePath = images[random.nextInt(images.length)];
         }
 
         return ElevatedButton(
@@ -123,7 +126,7 @@ class HomeScreen extends StatelessWidget {
 
       return assets;
     } catch (e) {
-      print('Error loading asset list for category $categoryPath: $e');
+      // print('Error loading asset list for category $categoryPath: $e');
       return []; // Возвращаем пустой список в случае ошибки
     }
   }
