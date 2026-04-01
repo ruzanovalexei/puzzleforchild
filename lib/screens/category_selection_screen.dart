@@ -61,14 +61,13 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
       // print('[_loadCategoryImages] Загружено ${_imageAssets.length} ассетов для категории: ${widget.categoryAssetPath}');
 
     } catch (e, stackTrace) {
+      debugPrint('Error: $e\nStackTrace: $stackTrace');
       if (mounted) {
         setState(() {
           _error = 'Ошибка загрузки списка изображений: $e';
           _isLoading = false;
         });
       }
-      // print('[_loadCategoryImages] Error loading asset list file: $e');
-      // print('[_loadCategoryImages] Stacktrace: $stackTrace');
     }
   }
 
