@@ -21,7 +21,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get farmAnimalsCategory => 'Çiftlik Hayvanları';
 
   @override
-  String get wildAnimalsCategory => 'Rusya Yaban Hayvanları';
+  String get wildAnimalsCategory => 'Avrasya\'nın vahşi hayvanları';
 
   @override
   String get africanAnimalsCategory => 'Afrika Yaban Hayvanları';

@@ -21,7 +21,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get farmAnimalsCategory => 'Farm Animals';
 
   @override
-  String get wildAnimalsCategory => 'Wild Animals of Russia';
+  String get wildAnimalsCategory => 'Wild Animals of Eurasia';
 
   @override
   String get africanAnimalsCategory => 'Wild Animals of Africa';
