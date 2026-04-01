@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:puzzleforchild/screens/category_selection_screen.dart';
 import 'package:puzzleforchild/screens/settings_screen.dart';
 import 'package:puzzleforchild/l10n/app_localizations.dart';
+import 'package:puzzleforchild/services/locale_service.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -28,7 +29,14 @@ class HomeScreen extends StatelessWidget {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                MaterialPageRoute(
+                  builder: (context) => SettingsScreen(
+                    onLanguageSaved: (languageCode) {
+                      // Применяем язык через LocaleService callback
+                      LocaleService.onLocaleChanged?.call(Locale(languageCode));
+                    },
+                  ),
+                ),
               );
             },
           ),

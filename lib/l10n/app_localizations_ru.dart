@@ -84,7 +84,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get russian => 'Русский';
 
   @override
-  String get english => 'Английский';
+  String get english => 'English';
 
   @override
   String get system => 'Системный';
@@ -94,4 +94,190 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get currentOpacity => 'Текущая прозрачность';
+
+  @override
+  String get animal_canary => 'Канарейка';
+
+  @override
+  String get animal_kapibara => 'Капибара';
+
+  @override
+  String get animal_dwarf_rabbit => 'Карликовый кролик';
+
+  @override
+  String get animal_cat => 'Кошка';
+
+  @override
+  String get animal_frog => 'Лягушка';
+
+  @override
+  String get animal_guinea_pig => 'Морская свинка';
+
+  @override
+  String get animal_tarantula => 'Паук-птицеед';
+
+  @override
+  String get animal_parrot => 'Попугай';
+
+  @override
+  String get animal_fish => 'Рыбка';
+
+  @override
+  String get animal_dog => 'Собака';
+
+  @override
+  String get animal_snail => 'Улитка';
+
+  @override
+  String get animal_hamster => 'Хомяк';
+
+  @override
+  String get animal_ferret => 'Хорек';
+
+  @override
+  String get animal_turtle => 'Черепаха';
+
+  @override
+  String get animal_chinchilla => 'Шиншилла';
+
+  @override
+  String get animal_lizard => 'Ящерица';
+
+  @override
+  String get animal_ram => 'Баран';
+
+  @override
+  String get animal_bull => 'Бык';
+
+  @override
+  String get animal_goose => 'Гусь';
+
+  @override
+  String get animal_turkey => 'Индюк';
+
+  @override
+  String get animal_goat => 'Коза';
+
+  @override
+  String get animal_cow => 'Корова';
+
+  @override
+  String get animal_chicken => 'Курица';
+
+  @override
+  String get animal_horse => 'Лошадь';
+
+  @override
+  String get animal_sheep => 'Овца';
+
+  @override
+  String get animal_donkey => 'Осел';
+
+  @override
+  String get animal_rooster => 'Петух';
+
+  @override
+  String get animal_pig => 'Свинья';
+
+  @override
+  String get animal_duck => 'Утка';
+
+  @override
+  String get animal_pheasant => 'Фазан';
+
+  @override
+  String get animal_squirrel => 'Белка';
+
+  @override
+  String get animal_polar_bear => 'Белый медведь';
+
+  @override
+  String get animal_brown_bear => 'Бурый медведь';
+
+  @override
+  String get animal_wolf => 'Волк';
+
+  @override
+  String get animal_stoat => 'Горностай';
+
+  @override
+  String get animal_snowshoe_hare => 'Заяц-беляк';
+
+  @override
+  String get animal_european_hare => 'Заяц-русак';
+
+  @override
+  String get animal_wild_boar => 'Кабан';
+
+  @override
+  String get animal_roe_deer => 'Косуля';
+
+  @override
+  String get animal_fox => 'Лисица';
+
+  @override
+  String get animal_moose => 'Лось';
+
+  @override
+  String get animal_walrus => 'Морж';
+
+  @override
+  String get animal_lynx => 'Рысь';
+
+  @override
+  String get animal_reindeer => 'Северный олень';
+
+  @override
+  String get animal_ground_squirrel => 'Суслик';
+
+  @override
+  String get animal_siberian_tiger => 'Тигр амурский';
+
+  @override
+  String get animal_hippo => 'Бегемот';
+
+  @override
+  String get animal_buffalo => 'Буйвол';
+
+  @override
+  String get animal_camel => 'Верблюд';
+
+  @override
+  String get animal_cheetah => 'Гепард';
+
+  @override
+  String get animal_hyena => 'Гиена';
+
+  @override
+  String get animal_gorilla => 'Горилла';
+
+  @override
+  String get animal_zebra => 'Зебра';
+
+  @override
+  String get animal_crocodile => 'Крокодил';
+
+  @override
+  String get animal_lion => 'Лев';
+
+  @override
+  String get animal_lemur => 'Лемур';
+
+  @override
+  String get animal_leopard => 'Леопард';
+
+  @override
+  String get animal_rhino => 'Носорог';
+
+  @override
+  String get animal_elephant => 'Слон';
+
+  @override
+  String get animal_ostrich => 'Страус';
+
+  @override
+  String get animal_meerkat => 'Сурикат';
+
+  @override
+  String get animal_chimpanzee => 'Шимпанзе';
 }

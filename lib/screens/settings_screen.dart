@@ -4,7 +4,9 @@ import 'package:puzzleforchild/l10n/app_localizations.dart';
 import 'package:puzzleforchild/services/locale_service.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  final Function(String languageCode)? onLanguageSaved;
+  
+  const SettingsScreen({super.key, this.onLanguageSaved});
 
   static const String puzzleGridSizeKey = 'puzzleGridSize';
   static const String puzzleOpacityKey = 'puzzleOpacity';
@@ -38,10 +40,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final double? savedOpacity = prefs.getDouble(SettingsScreen.puzzleOpacityKey);
     final String? savedLocale = prefs.getString('appLocale');
     
+    final String language = savedLocale ?? 'ru';
+    
     setState(() {
       _gridSize = savedGridSize ?? 4;
       _puzzleOpacity = savedOpacity ?? 0.1;
-      _selectedLanguage = savedLocale ?? 'ru';
+      _selectedLanguage = language;
     });
     _validateInput();
   }
@@ -65,6 +69,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await prefs.setInt(SettingsScreen.puzzleGridSizeKey, _gridSize);
     await prefs.setDouble(SettingsScreen.puzzleOpacityKey, _puzzleOpacity);
     
+    // Сохраняем язык только при нажатии "Сохранить"
+    await _localeService.setLocale(_selectedLanguage);
+    
+    // Применяем язык через callback
+    widget.onLanguageSaved?.call(_selectedLanguage);
+    
     Navigator.pop(context);
   }
 
@@ -75,7 +85,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _selectedLanguage = languageCode;
     });
     
-    _localeService.setLocale(languageCode);
+    // Не сохраняем и не применяем язык сразу - только при нажатии "Сохранить"
   }
 
   @override

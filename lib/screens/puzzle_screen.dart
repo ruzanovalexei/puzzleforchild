@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:puzzleforchild/screens/settings_screen.dart';
 import 'package:puzzleforchild/services/ad_banner_service.dart';
 import 'package:puzzleforchild/l10n/app_localizations.dart';
+import 'package:puzzleforchild/l10n/animal_name_extension.dart';
 import 'package:path/path.dart' as p;
 
 // ===================================
@@ -516,7 +517,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                         fit: BoxFit.scaleDown,
                         alignment: Alignment.center,
                         child: Text(
-                          p.basenameWithoutExtension(_currentImagePath!),
+                          l10n.getAnimalName(p.basenameWithoutExtension(_currentImagePath!)),
                           style: const TextStyle(
                             fontSize: 48, // Увеличил размер шрифта
                             color: Colors.black,

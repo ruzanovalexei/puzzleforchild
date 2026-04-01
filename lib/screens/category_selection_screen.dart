@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:puzzleforchild/screens/puzzle_screen.dart';
 import 'package:puzzleforchild/l10n/app_localizations.dart';
+import 'package:puzzleforchild/l10n/animal_name_extension.dart';
 
 class CategorySelectionScreen extends StatefulWidget {
   final String categoryTitle;
@@ -149,7 +150,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
                                 Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Text(
-                                    fileName,
+                                    l10n.getAnimalName(fileName),
                                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                                     textAlign: TextAlign.center,
                                     maxLines: 1,
