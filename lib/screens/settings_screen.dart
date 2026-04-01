@@ -165,9 +165,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   label: Text(l10n.english),
                 ),
                 ButtonSegment<String>(
-                  value: 'zh',
-                  label: Text(l10n.chinese),
+                  value: 'tr',
+                  label: Text(l10n.turkish),
                 ),
+                // ButtonSegment<String>(
+                //   value: 'ja',
+                //   label: Text(l10n.japanese),
+                // ),
               ],
               selected: {_selectedLanguage},
               onSelectionChanged: (Set<String> selection) {

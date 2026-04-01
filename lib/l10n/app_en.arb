@@ -4,7 +4,7 @@
   "categorySelectionTitle": "Select Animal Category",
   "petsCategory": "Pets",
   "farmAnimalsCategory": "Farm Animals",
-  "wildAnimalsCategory": "Wild Animals of Russia",
+  "wildAnimalsCategory": "Wild Animals of Eurasia",
   "africanAnimalsCategory": "Wild Animals of Africa",
   "settingsTitle": "Puzzle Settings",
   "saveButton": "Save",
@@ -97,6 +97,8 @@
   "russian": "Russian",
   "english": "English",
   "chinese": "Chinese",
+  "japanese": "Japanese",
+  "turkish": "Turkish",
   "system": "System",
   "emptyCategory": "No images in this category yet"
 }

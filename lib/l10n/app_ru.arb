@@ -109,6 +109,14 @@
   "@chinese": {
     "description": "中文"
   },
+  "japanese": "日本語",
+  "@japanese": {
+    "description": "日本語"
+  },
+  "turkish": "Türkçe",
+  "@turkish": {
+    "description": "Türkçe"
+  },
   "system": "Системный",
   "@system": {
     "description": "Системный язык"

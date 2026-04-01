@@ -6,7 +6,9 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations_en.dart';
+import 'app_localizations_ja.dart';
 import 'app_localizations_ru.dart';
+import 'app_localizations_tr.dart';
 import 'app_localizations_zh.dart';
 
 // ignore_for_file: type=lint
@@ -96,7 +98,9 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
+    Locale('ja'),
     Locale('ru'),
+    Locale('tr'),
     Locale('zh')
   ];
 
@@ -255,6 +259,18 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'中文'**
   String get chinese;
+
+  /// 日本語
+  ///
+  /// In ru, this message translates to:
+  /// **'日本語'**
+  String get japanese;
+
+  /// Türkçe
+  ///
+  /// In ru, this message translates to:
+  /// **'Türkçe'**
+  String get turkish;
 
   /// Системный язык
   ///
@@ -658,7 +674,7 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) =>
-      <String>['en', 'ru', 'zh'].contains(locale.languageCode);
+      <String>['en', 'ja', 'ru', 'tr', 'zh'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -669,8 +685,12 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   switch (locale.languageCode) {
     case 'en':
       return AppLocalizationsEn();
+    case 'ja':
+      return AppLocalizationsJa();
     case 'ru':
       return AppLocalizationsRu();
+    case 'tr':
+      return AppLocalizationsTr();
     case 'zh':
       return AppLocalizationsZh();
   }

@@ -528,7 +528,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                                 offset: Offset(2.0, 2.0),
                               ),
                             ],
-                            fontWeight: FontWeight.bold,
+                            // fontWeight: FontWeight.bold,
                           ),
                           textAlign: TextAlign.center, // Выравнивание текста по центру
                           overflow: TextOverflow.ellipsis,
@@ -678,16 +678,6 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                         )
                       : Column( // Доступные кусочки во время игры
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                l10n.availablePieces(_activePiecesIds.length),
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
                             Expanded(
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
