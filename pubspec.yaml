@@ -1,6 +1,6 @@
 name: puzzleforchild
 description: Мозаика. Животные
-version: 1.0.4
+version: 1.0.5+100005
 publish_to: 'none'
 
 environment:
