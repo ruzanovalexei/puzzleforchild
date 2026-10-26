@@ -418,6 +418,10 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
   }
 
 
+  // Смещение feedback перетаскиваемого кусочка вверх (заполняется в build
+  // равным высоте текущего кусочка пазла, которая зависит от размера сетки).
+  double _dragFeedbackOffset = 0.0;
+
   void _onPiecePlaced(int pieceId, Offset globalDropPosition) {
     if (_isGameComplete) return;
 
@@ -428,10 +432,27 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
       return;
     }
 
+    // DragTarget — это верхний Stack, поэтому его координаты (details.offset) —
+    // это позиция пальца относительно левого верхнего угла всей Column
+    // (заголовок + доска + tray).
+    // Нам нужно:
+    // 1) прибавить _dragFeedbackOffset, чтобы вернуть кусочек на позицию "как под пальцем"
+    // 2) вычесть позицию доски относительно Stack (globalToLocal на board)
+    // 3) вычесть размер самой доски для проверки границ
+    final Offset globalDropPoint = globalDropPosition + Offset(0, -_dragFeedbackOffset);
+
     final Offset globalPuzzleBoardOrigin = renderBox.localToGlobal(Offset.zero);
     final Size actualPuzzleBoardSize = renderBox.size;
 
-    final Offset localDropPositionOnPuzzleBoard = globalDropPosition - globalPuzzleBoardOrigin;
+    final Offset localDropPositionOnPuzzleBoard = globalDropPoint - globalPuzzleBoardOrigin;
+
+    // Проверяем, что видимый кусочек попал в пределы доски.
+    if (localDropPositionOnPuzzleBoard.dx < 0 ||
+        localDropPositionOnPuzzleBoard.dy < 0 ||
+        localDropPositionOnPuzzleBoard.dx > actualPuzzleBoardSize.width ||
+        localDropPositionOnPuzzleBoard.dy > actualPuzzleBoardSize.height) {
+      return;
+    }
 
     final Offset correctAbsolutePositionOnBoard = Offset(
       currentPiece.correctRelativePosition.dx * actualPuzzleBoardSize.width,
@@ -451,8 +472,6 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
     );
 
     final double distance = (droppedPieceCenter - correctPositionCenter).distance;
-
-      // const double threshold = 50.0;
 
     // Расчетное значение threshold: 200 / savedGridSize
     // savedGridSize хранится в переменной `rows` (которая равна `cols`)
@@ -510,6 +529,9 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
     double finalCandidatePieceSide = min(maxPuzzleBoardWidth / cols, actualAvailableHeightForPuzzleBoard / rows);
     final Size finalActualPieceRenderSize = Size.square(max(50.0, finalCandidatePieceSide));
 
+    // Синхронизируем смещение feedback с реальной высотой кусочка
+    _dragFeedbackOffset = finalActualPieceRenderSize.height;
+
     final Size finalActualTotalPuzzleBoardSize = Size(
         finalActualPieceRenderSize.width * cols,
         finalActualPieceRenderSize.height * rows
@@ -520,204 +542,224 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
       appBar: AppBar(
         title: Text(l10n.backButton),
       ),
-      body: _isLoading
+        body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
-                Center(
-                  child: SizedBox(
-                    width: screenWidth, // Ширина в половину экрана
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.center,
-                        child: Text(
-                          l10n.getAnimalName(p.basenameWithoutExtension(_currentImagePath!)),
-                          style: const TextStyle(
-                            fontSize: 48, // Увеличил размер шрифта
-                            color: Colors.black,
-                            shadows: [  // Добавляем тени для красочности
-                              Shadow(
-                                blurRadius: 4.0,
-                                color: Colors.black,
-                                offset: Offset(2.0, 2.0),
-                              ),
-                            ],
-                            // fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center, // Выравнивание текста по центру
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+                // Основной контент занимает всю область без баннера внизу,
+                // чтобы DragTarget покрыл и доску, и область выбора кусочков.
                 Expanded(
-                  child: Center(
-                    child: FittedBox(
-                      fit: BoxFit.contain,
-                      child: SizedBox(
-                        key: _puzzleBoardKey,
-                        width: finalActualTotalPuzzleBoardSize.width,
-                        height: finalActualTotalPuzzleBoardSize.height,
-                        child: Stack(
-                          children: [
-                            // Сетка
-                            Positioned.fill(
-                              child: CustomPaint(
-                                painter: GridPainter(rows: rows, cols: cols, actualPuzzleBoardSize: finalActualTotalPuzzleBoardSize),
-                              ),
-                            ),
-                            // Фоновое изображение (или полная картинка после завершения)
-                            Positioned.fill(
-                              child: Opacity(
-                                opacity: _isGameComplete ? 1.0 : _backgroundOpacity, // Используем значение из настроек
-                                child: RawImage(
-                                  image: _image,
-                                  fit: BoxFit.fill,
-                                ),
-                              ),
-                            ),
-                            
-                            // Размещенные кусочки (только если игра не завершена)
-                            if (!_isGameComplete)
-                              ..._placedPiecesPositions.entries.map((entry) {
-                                final pieceId = entry.key;
-                                final position = entry.value;
-                                final piece = _allPieces.firstWhere((p) => p.id == pieceId);
-                                return Positioned(
-                                  left: position.dx,
-                                  top: position.dy,
-                                  child: ImagePiece(piece: piece, pieceRenderSize: finalActualPieceRenderSize),
-                                );
-                              }).toList(),
-
-                            // Надпись "Поздравляю!"
-                            if (_isGameComplete)
-                              Center(
-                                child: Container(
-                                  padding: const EdgeInsets.all(16.0),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withOpacity(0.5),
-                                    borderRadius: BorderRadius.circular(10.0),
-                                  ),
+                  child: Stack(
+                    children: [
+                      Column(
+                        children: [
+                          Center(
+                            child: SizedBox(
+                              width: screenWidth, // Ширина в половину экрана
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.center,
                                   child: Text(
-                                    l10n.congratulations,
+                                    l10n.getAnimalName(p.basenameWithoutExtension(_currentImagePath!)),
                                     style: const TextStyle(
-                                      fontSize: 36,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
+                                      fontSize: 48, // Увеличил размер шрифта
+                                      color: Colors.black,
+                                      shadows: [  // Добавляем тени для красочности
+                                        Shadow(
+                                          blurRadius: 4.0,
+                                          color: Colors.black,
+                                          offset: Offset(2.0, 2.0),
+                                        ),
+                                      ],
+                                      // fontWeight: FontWeight.bold,
                                     ),
+                                    textAlign: TextAlign.center, // Выравнивание текста по центру
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                  
                                 ),
                               ),
-                            
-                            // Область для размещения кусочков (DragTarget), занимающая весь Stack
-                            // Активна только если игра не завершена
-                            if (!_isGameComplete)
-                              Positioned.fill(
-                                child: DragTarget<int>(
-                                  onWillAccept: (data) => true,
-                                  onAcceptWithDetails: (details) {
-                                    _onPiecePlaced(details.data, details.offset);
-                                  },
-                                  builder: (context, candidateData, rejectedData) {
-                                    return Container();
-                                  },
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                // Нижняя часть - доступные кусочки или кнопки управления после завершения
-                Container(
-                  height: dynamicTrayHeight,
-                  color: Colors.grey[100],
-                  child: _isGameComplete
-                      ? Row( // Две кнопки после завершения игры
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Expanded(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    l10n.goToMain,
-                                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      Navigator.popUntil(context, (route) => route.isFirst);
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.redAccent, // Более яркий красный
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(15.0), // Обтекаемая форма
-                                      ),
-                                      padding: const EdgeInsets.all(16.0),
-                                    ),
-                                    child: const Icon(Icons.stop, color: Colors.white, size: 40),
-                                  ),
-                                ],
-                              ),
                             ),
-                            Expanded(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    l10n.continueButton,
-                                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  ElevatedButton(
-                                    onPressed: _resetGame,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.lightGreen, // Более яркий зеленый
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(15.0), // Обтекаемая форма
-                                      ),
-                                      padding: const EdgeInsets.all(16.0),
-                                    ),
-                                    child: const Icon(Icons.play_arrow, color: Colors.white, size: 40),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        )
-                      : Column( // Доступные кусочки во время игры
-                          children: [
-                            Expanded(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                children: _activePiecesIds.map((pieceId) {
-                                  PuzzlePiece piece = _allPieces.firstWhere((p) => p.id == pieceId);
-                                  return Expanded(
-                                    child: Center(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(4.0),
-                                        child: Draggable<int>(
-                                          data: piece.id,
-                                          feedback: ImagePiece(piece: piece, opacity: 0.7, pieceRenderSize: finalActualPieceRenderSize),
-                                          childWhenDragging: ImagePiece(piece: piece, opacity: 0.3, pieceRenderSize: finalActualPieceRenderSize),
-                                          child: ImagePiece(piece: piece, pieceRenderSize: finalActualPieceRenderSize),
+                          ),
+                          Expanded(
+                            child: Center(
+                              child: FittedBox(
+                                fit: BoxFit.contain,
+                                child: SizedBox(
+                                  key: _puzzleBoardKey,
+                                  width: finalActualTotalPuzzleBoardSize.width,
+                                  height: finalActualTotalPuzzleBoardSize.height,
+                                  child: Stack(
+                                    children: [
+                                      // Сетка
+                                      Positioned.fill(
+                                        child: CustomPaint(
+                                          painter: GridPainter(rows: rows, cols: cols, actualPuzzleBoardSize: finalActualTotalPuzzleBoardSize),
                                         ),
                                       ),
-                                    ),
-                                  );
-                                }).toList(),
+                                      // Фоновое изображение (или полная картинка после завершения)
+                                      Positioned.fill(
+                                        child: Opacity(
+                                          opacity: _isGameComplete ? 1.0 : _backgroundOpacity, // Используем значение из настроек
+                                          child: RawImage(
+                                            image: _image,
+                                            fit: BoxFit.fill,
+                                          ),
+                                        ),
+                                      ),
+
+                                      // Размещенные кусочки (только если игра не завершена)
+                                      if (!_isGameComplete)
+                                        ..._placedPiecesPositions.entries.map((entry) {
+                                          final pieceId = entry.key;
+                                          final position = entry.value;
+                                          final piece = _allPieces.firstWhere((p) => p.id == pieceId);
+                                          return Positioned(
+                                            left: position.dx,
+                                            top: position.dy,
+                                            child: ImagePiece(piece: piece, pieceRenderSize: finalActualPieceRenderSize),
+                                          );
+                                        }).toList(),
+
+                                      // Надпись "Поздравляю!"
+                                      if (_isGameComplete)
+                                        Center(
+                                          child: Container(
+                                            padding: const EdgeInsets.all(16.0),
+                                            decoration: BoxDecoration(
+                                              color: Colors.black.withOpacity(0.5),
+                                              borderRadius: BorderRadius.circular(10.0),
+                                            ),
+                                            child: Text(
+                                              l10n.congratulations,
+                                              style: const TextStyle(
+                                                fontSize: 36,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ),
-                          ],
+                          ),
+                          // Нижняя часть - доступные кусочки или кнопки управления после завершения
+                          Container(
+                            height: dynamicTrayHeight,
+                            color: Colors.grey[100],
+                            child: _isGameComplete
+                                ? Row( // Две кнопки после завершения игры
+                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              l10n.goToMain,
+                                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                Navigator.popUntil(context, (route) => route.isFirst);
+                                              },
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.redAccent, // Более яркий красный
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(15.0), // Обтекаемая форма
+                                                ),
+                                                padding: const EdgeInsets.all(16.0),
+                                              ),
+                                              child: const Icon(Icons.stop, color: Colors.white, size: 40),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              l10n.continueButton,
+                                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            ElevatedButton(
+                                              onPressed: _resetGame,
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.lightGreen, // Более яркий зеленый
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(15.0), // Обтекаемая форма
+                                                ),
+                                                padding: const EdgeInsets.all(16.0),
+                                              ),
+                                              child: const Icon(Icons.play_arrow, color: Colors.white, size: 40),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : Column( // Доступные кусочки во время игры
+                                    children: [
+                                      Expanded(
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                          children: _activePiecesIds.map((pieceId) {
+                                            PuzzlePiece piece = _allPieces.firstWhere((p) => p.id == pieceId);
+                                            return Expanded(
+                                              child: Center(
+                                                child: Padding(
+                                                  padding: const EdgeInsets.all(4.0),
+                                                  child: Draggable<int>(
+                                                    data: piece.id,
+                                                    // Сдвигаем feedback вверх на высоту текущего кусочка пазла
+                                                    feedback: Transform.translate(
+                                                      offset: Offset(0, -_dragFeedbackOffset),
+                                                      child: ImagePiece(
+                                                        piece: piece,
+                                                        opacity: 0.7,
+                                                        pieceRenderSize: finalActualPieceRenderSize,
+                                                      ),
+                                                    ),
+                                                    childWhenDragging: ImagePiece(piece: piece, opacity: 0.3, pieceRenderSize: finalActualPieceRenderSize),
+                                                    child: ImagePiece(piece: piece, pieceRenderSize: finalActualPieceRenderSize),
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                          }).toList(),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                          ), // Закрытие Container, который включает Row или Column с кусочками
+                        ],
+                      ),
+                      // DragTarget поверх всей области контента (доска + tray):
+                      // палец может оставаться над областью выбора кусочков,
+                      // а видимый (сдвинутый вверх) кусочек уже находиться на доске.
+                      if (!_isGameComplete)
+                        Positioned.fill(
+                          child: DragTarget<int>(
+                            onWillAcceptWithDetails: (details) => true,
+                            onAcceptWithDetails: (details) {
+                              _onPiecePlaced(details.data, details.offset);
+                            },
+                            builder: (context, candidateData, rejectedData) {
+                              return const SizedBox.expand();
+                            },
+                          ),
                         ),
-                ), // Закрытие Container, который включает Row или Column с кусочками
+                    ],
+                  ),
+                ),
 
                 // Фиксированная область баннера внизу — высота не меняется при ротации рекламы
                 SizedBox(
