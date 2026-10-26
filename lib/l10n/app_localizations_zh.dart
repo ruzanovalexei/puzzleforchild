@@ -89,10 +89,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chinese => '中文';
 
   @override
-  String get japanese => '日本語';
+  String get japanese => '日语';
 
   @override
-  String get turkish => 'Türkçe';
+  String get turkish => '土耳其语';
 
   @override
   String get system => '系统';

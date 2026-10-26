@@ -490,7 +490,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
 
     final double availableBodyHeight = screenHeight - appBarHeight - bottomPadding - topPadding;
 
-    const double bannerReservedHeight = 60.0; // Фиксированная высота области баннера внизу
+    const double bannerReservedHeight = 110.0; // Фиксированная высота области баннера внизу (sticky ~100dp + запас)
 
     final double maxPuzzleBoardWidth = screenWidth * 0.95; 
 
@@ -721,7 +721,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
 
                 // Фиксированная область баннера внизу — высота не меняется при ротации рекламы
                 SizedBox(
-                  height: 60,
+                  height: bannerReservedHeight,
                   width: double.infinity,
                   child: _currentBannerAd != null
                       ? BannerWidget(bannerAd: _currentBannerAd!)

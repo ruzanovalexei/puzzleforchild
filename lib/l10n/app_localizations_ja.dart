@@ -52,7 +52,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get adNotAvailableMessage =>
-      '表示する広告がありません：インターネット接続を確認するか、广告ブロッカーを無効にしてください';
+      '表示する広告がありません：インターネット接続を確認するか、広告ブロッカーを無効にしてください';
 
   @override
   String get adLoadError => '広告読み込みエラー';
@@ -111,7 +111,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get animal_kapibara => 'カピバラ';
 
   @override
-  String get animal_dwarf_rabbit => ' dwarf rabbit';
+  String get animal_dwarf_rabbit => 'ドワーフラビット';
 
   @override
   String get animal_cat => '猫';
@@ -153,7 +153,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get animal_lizard => 'トカゲ';
 
   @override
-  String get animal_ram => 'ラム';
+  String get animal_ram => 'ヒツジ（オス）';
 
   @override
   String get animal_bull => '雄牛';
@@ -189,7 +189,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get animal_pig => '豚';
 
   @override
-  String get animal_duck => 'アヒャ';
+  String get animal_duck => 'アヒル';
 
   @override
   String get animal_pheasant => 'キジ';
@@ -228,7 +228,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get animal_moose => 'ヘラジカ';
 
   @override
-  String get animal_walrus => 'アザラシ';
+  String get animal_walrus => 'セイウチ';
 
   @override
   String get animal_lynx => 'オオヤマネコ';
@@ -270,7 +270,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get animal_lion => 'ライオン';
 
   @override
-  String get animal_lemur => 'レミング';
+  String get animal_lemur => 'クジャクサル';
 
   @override
   String get animal_leopard => 'ヒョウ';
@@ -285,8 +285,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get animal_ostrich => 'ダチョウ';
 
   @override
-  String get animal_meerkat => 'マングース';
+  String get animal_meerkat => 'スリカータ';
 
   @override
-  String get animal_chimpanzee => 'チimpanzee';
+  String get animal_chimpanzee => 'チンパンジー';
 }

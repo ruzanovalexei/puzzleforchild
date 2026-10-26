@@ -461,11 +461,19 @@ class BannerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: IgnorePointer(
-        ignoring: true, // Всегда игнорировать жесты
-        child: AdWidget(bannerAd: bannerAd),
+    // Align(center) + clipBehavior: Clip.hardEdge гарантируют, что внутренний
+    // AdWidget (который сам меняет размер при загрузке рекламы через loadStateStream)
+    // не вызовет overflow или скачок layout родителя — он просто центрируется
+    // внутри фиксированной области и обрезается по её границам.
+    return ClipRect(
+      child: Align(
+        alignment: Alignment.center,
+        widthFactor: 1.0,
+        heightFactor: 1.0,
+        child: IgnorePointer(
+          ignoring: true, // Всегда игнорировать жесты
+          child: AdWidget(bannerAd: bannerAd),
+        ),
       ),
     );
   }
