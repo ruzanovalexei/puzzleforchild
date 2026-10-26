@@ -38,30 +38,12 @@ android {
         manifestPlaceholders["yandexMobileAdsAppId"] = "18531801"
     }
 
-    signingConfigs {
-        if (keystorePropertiesFile.exists()) {
-            create("release") {
-                storeFile = file(keystoreProperties.getProperty("storeFile"))
-                storePassword = keystoreProperties.getProperty("storePassword")
-                keyAlias = keystoreProperties.getProperty("keyAlias")
-                keyPassword = keystoreProperties.getProperty("keyPassword")
-            }
-        }
-    }
 
-    buildTypes {
-        release {
-            if (keystorePropertiesFile.exists()) {
-                signingConfig = signingConfigs.getByName("release")
-            } else {
-                signingConfig = signingConfigs.getByName("debug")
-            }
-        }
-    }
 
     dependencies {
         coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
-        implementation("com.yandex.android:mobileads:7.18.0")
+            implementation("com.android.billingclient:billing:8.0.0")
+            implementation("com.yandex.ads.mediation:mobileads-mytarget:5.27.2.1")
     }
 }
 

@@ -9,6 +9,7 @@ import 'package:puzzleforchild/screens/settings_screen.dart';
 import 'package:puzzleforchild/services/ad_banner_service.dart';
 import 'package:puzzleforchild/l10n/app_localizations.dart';
 import 'package:puzzleforchild/l10n/animal_name_extension.dart';
+import 'package:yandex_mobileads/mobile_ads.dart';
 import 'package:path/path.dart' as p;
 
 // ===================================
@@ -157,7 +158,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
   Timer? _bannerRefreshTimer;
   bool _isGameComplete = false;
   bool _isLoading = true;
-  Widget? _bannerWidget;
+  BannerAd? _currentBannerAd;
   int rows = 4;
   int cols = 4;
   double _backgroundOpacity = 0.1; // Переменная для хранения прозрачности
@@ -166,6 +167,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
   String? _currentImagePath; // Для отслеживания текущего пазла
   List<String> _categoryImagePaths = []; // Список всех изображений в категории
 
+  // Счётчик для отсрочки показа interstitial рекламы — ведётся в AdBannerService
 
   @override
   void initState() {
@@ -178,33 +180,33 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
   }
 
   void _initializeBannerWidget() {
-    if (_bannerWidget == null) {
-      _bannerWidget = _adBannerService.createBannerWidget();
-      if (mounted) {
-        setState(() {});
-      }
-    }
-    // Запускаем таймер обновления баннера каждые 4 секунды
+    _loadNewBanner();
+    // Запускаем таймер обновления баннера каждые 30 секунд
     _bannerRefreshTimer?.cancel();
-    _bannerRefreshTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+    _bannerRefreshTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
       if (mounted && !_isGameComplete) {
         _refreshBanner();
       }
     });
   }
 
-  void _refreshBanner() {
-    _bannerWidget = _adBannerService.createBannerWidget();
+  void _loadNewBanner() {
+    final newBanner = _adBannerService.createBannerAd();
+    _currentBannerAd = newBanner;
     if (mounted) {
       setState(() {});
     }
+  }
+
+  void _refreshBanner() {
+    _loadNewBanner();
   }
 
   @override
   void dispose() {
     _timer?.cancel();
     _bannerRefreshTimer?.cancel();
-    _bannerWidget = null;
+    _currentBannerAd?.destroy();
     super.dispose();
   }
 
@@ -319,7 +321,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
     return pieces;
   }
 
-  void _checkGameCompletion() {
+  void _checkGameCompletion() async {
     if (_placedPiecesPositions.length == _allPieces.length && !_isGameComplete) {
       bool allPiecesAreCorrectlyPositioned = true;
 
@@ -354,6 +356,18 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
         });
 
         _timer?.cancel();
+        
+        // Увеличиваем глобальный счётчик и показываем interstitial при достижении порога
+        final shouldShowInterstitial = await _adBannerService.incrementCompletedLevels();
+        if (shouldShowInterstitial && mounted) {
+          _adBannerService.showInterstitialAd(
+            context: context,
+            onAdDismissed: () {
+              debugPrint('[Puzzle] Interstitial ad dismissed');
+            },
+          );
+        }
+        
         // Диалог убран, надпись и кнопки будут показаны в build
       }
     }
@@ -476,9 +490,11 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
 
     final double availableBodyHeight = screenHeight - appBarHeight - bottomPadding - topPadding;
 
+    const double bannerReservedHeight = 60.0; // Фиксированная высота области баннера внизу
+
     final double maxPuzzleBoardWidth = screenWidth * 0.95; 
 
-    final double estimatedAvailableHeightForPuzzleBoard = availableBodyHeight * 0.7;
+    final double estimatedAvailableHeightForPuzzleBoard = (availableBodyHeight - bannerReservedHeight) * 0.7;
 
     double estimatedCandidatePieceSideForBoard = min(maxPuzzleBoardWidth / cols, estimatedAvailableHeightForPuzzleBoard / rows);
     final Size estimatedPieceRenderSize = Size.square(max(50.0, estimatedCandidatePieceSideForBoard));
@@ -489,7 +505,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
     final double dynamicTrayHeight = textContentHeight + rowOuterPadding + estimatedPieceRenderSize.height + rowOuterPadding;
 
 
-    final double actualAvailableHeightForPuzzleBoard = availableBodyHeight - dynamicTrayHeight;
+    final double actualAvailableHeightForPuzzleBoard = availableBodyHeight - dynamicTrayHeight - bannerReservedHeight;
 
     double finalCandidatePieceSide = min(maxPuzzleBoardWidth / cols, actualAvailableHeightForPuzzleBoard / rows);
     final Size finalActualPieceRenderSize = Size.square(max(50.0, finalCandidatePieceSide));
@@ -703,18 +719,14 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                         ),
                 ), // Закрытие Container, который включает Row или Column с кусочками
 
-                // Добавляем отступ в 20 пикселей
-                const SizedBox(height: 20.0),
-                // Блок рекламы - используем созданный один раз виджет
-                if (_bannerWidget != null) ...[
-                  _bannerWidget!,
-                ] else ...[
-                  // Показываем загрузку, если виджет еще не создан
-                  const SizedBox(
-                    height: 50,
-                    child: Center(child: CircularProgressIndicator()),
-                  ),
-                ],
+                // Фиксированная область баннера внизу — высота не меняется при ротации рекламы
+                SizedBox(
+                  height: 60,
+                  width: double.infinity,
+                  child: _currentBannerAd != null
+                      ? BannerWidget(bannerAd: _currentBannerAd!)
+                      : const SizedBox.shrink(),
+                ),
               ],
             ),
     );

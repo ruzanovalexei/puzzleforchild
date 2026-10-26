@@ -1,6 +1,6 @@
 name: puzzleforchild
 description: Мозаика. Животные
-version: 1.0.5+100005
+version: 1.0.6+100006
 publish_to: 'none'
 
 environment:
@@ -13,7 +13,7 @@ dependencies:
     sdk: flutter
   intl: ^0.20.2
   shared_preferences: ^2.0.15
-  yandex_mobileads: ^7.18.0
+  yandex_mobileads: ^8.6.0
   path: ^1.8.3
   # ... остальные зависимости ...
 

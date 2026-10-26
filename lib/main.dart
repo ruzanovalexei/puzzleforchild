@@ -5,6 +5,7 @@ import 'package:puzzleforchild/screens/home_screen.dart';
 import 'package:puzzleforchild/screens/language_selection_screen.dart';
 import 'package:puzzleforchild/l10n/app_localizations.dart';
 import 'package:puzzleforchild/services/locale_service.dart';
+import 'package:puzzleforchild/services/ad_banner_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,7 +15,10 @@ void main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-  
+
+  // Инициализируем рекламный сервис до запуска приложения
+  await AdBannerService().initialize();
+
   runApp(const MyApp());
 }
 

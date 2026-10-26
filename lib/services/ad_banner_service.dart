@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yandex_mobileads/mobile_ads.dart';
 
 /// Сервис для управления баннерами и рекламой с вознаграждением
@@ -8,6 +9,9 @@ class AdBannerService {
   static final AdBannerService _instance = AdBannerService._internal();
   factory AdBannerService() => _instance;
   AdBannerService._internal();
+
+  // Ключ для сохранения счётчика завершённых уровней
+  static const String completedLevelsKey = 'completed_levels_count';
 
   // Флаг инициализации для предотвращения повторной инициализации
   bool _isInitialized = false;
@@ -24,6 +28,7 @@ class AdBannerService {
     'R-M-18531801-8',
     'R-M-18531801-9',
     'R-M-18531801-10',
+
   ];
   // Список adUnitId для round-robin ротации баннеров Прод R-M-17946414-6
   // static const List<String> _bannerAdUnitIds = [
@@ -35,9 +40,14 @@ class AdBannerService {
 
 
   // adUnitId для рекламы с вознаграждением DEV
-  static const String _rewardedAdUnitId = 'R-M-18531801-77';
+  static const String _rewardedAdUnitId = 'demo-rewarded-yandex';
   // adUnitId для рекламы с вознаграждением Прод
   //  static const String _rewardedAdUnitId = 'R-M-17946414-2';
+
+  // adUnitId для межстраничной рекламы DEV
+  static const String _interstitialAdUnitId = 'R-M-18531801-11';
+  // adUnitId для межстраничной рекламы Прод
+  // static const String _interstitialAdUnitId = 'R-M-17946414-6';
 
   // Счётчик созданных баннеров
   int _totalBannersCreated = 0;
@@ -52,6 +62,28 @@ class AdBannerService {
   // Статистика rewarded ads
   int _rewardedAdShownCount = 0;
   int _rewardedAdCompletedCount = 0;
+
+  // Счётчик завершённых уровней (сохраняется между сессиями)
+  int _completedLevelsCount = 0;
+  int get completedLevelsCount => _completedLevelsCount;
+
+  /// Увеличивает счётчик завершённых уровней и сохраняет его.
+  /// Возвращает true, если достигнут порог показа interstitial рекламы.
+  Future<bool> incrementCompletedLevels() async {
+    _completedLevelsCount++;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(completedLevelsKey, _completedLevelsCount);
+    debugPrint('[AdBannerService] Completed levels: $_completedLevelsCount');
+
+    if (_completedLevelsCount >= _interstitialAfterLevels) {
+      _completedLevelsCount = 0;
+      await prefs.setInt(completedLevelsKey, 0);
+      return true;
+    }
+    return false;
+  }
+
+  static const int _interstitialAfterLevels = 3;
 
   // Stream для мониторинга
   final StreamController<BannerStats> _statsController = 
@@ -73,100 +105,97 @@ class AdBannerService {
   Future<void> initialize() async {
     // Предотвращаем повторную инициализацию
     if (_isInitialized) {
-      debugPrint('AdBannerService: Already initialized, skipping...');
+      // debugPrint('AdBannerService: Already initialized, skipping...');
       return;
     }
     
-    debugPrint('AdBannerService: Initializing...');
+    // debugPrint('AdBannerService: Initializing...');
+    
+    // Инициализируем Yandex Mobile Ads SDK
+    await YandexAds.initialize();
+    
+    // Загружаем сохранённый счётчик завершённых уровней
+    final prefs = await SharedPreferences.getInstance();
+    _completedLevelsCount = prefs.getInt(completedLevelsKey) ?? 0;
     
     _isInitialized = true;
     _emitStats();
-    debugPrint('AdBannerService: Initialized successfully');
+    // debugPrint('AdBannerService: Initialized successfully');
   }
 
   /// Создание одного баннера
-  Future<BannerAd> _createBanner(String adUnitId) async {
+  BannerAd _createBanner(String adUnitId) {
     final screenWidth = 320;
     final adSize = BannerAdSize.sticky(width: screenWidth);
     
-    final banner = BannerAd(
-      adUnitId: adUnitId,
-      adSize: adSize,
-      adRequest: const AdRequest(),
-      onAdLoaded: () {
+    final banner = BannerAd(adSize: adSize);
+    
+    // Подписываемся на состояние загрузки баннера (stream-based API в SDK 8.x)
+    banner.loadStateStream.listen((state) {
+      if (state is BannerAdLoadStateLoaded) {
         _successfulBannerLoads++;
         _emitStats();
         debugPrint('AdBannerService: Banner loaded successfully with adUnitId: $adUnitId');
-      },
-      onAdFailedToLoad: (error) {
+      } else if (state is BannerAdLoadStateError) {
         _failedBannerLoads++;
         _emitStats();
-        debugPrint('AdBannerService: Ad failed to load with adUnitId $adUnitId: $error');
-      },
-      onAdClicked: () => debugPrint('AdBannerService: Banner clicked with adUnitId: $adUnitId'),
-      onLeftApplication: () => debugPrint('AdBannerService: Left application with adUnitId: $adUnitId'),
-      onReturnedToApplication: () => debugPrint('AdBannerService: Returned to application with adUnitId: $adUnitId'),
-      onImpression: (impressionData) => debugPrint('AdBannerService: Impression tracked with adUnitId: $adUnitId'),
-    );
+        // debugPrint('AdBannerService: Ad failed to load with adUnitId $adUnitId: ${state.error}');
+      }
+    });
+    
+    // Загружаем рекламу
+    banner.load(AdRequest(adUnitId: adUnitId));
     
     return banner;
   }
 
   /// Получение баннера по запросу с round-robin
-  Future<BannerAd?> getBanner() async {
+  BannerAd? getBanner() {
     // Round-robin выбор adUnitId
     final adUnitId = _bannerAdUnitIds[_currentBannerIndex % _bannerAdUnitIds.length];
-    debugPrint('AdBannerService: Requesting banner with adUnitId: $adUnitId (index: ${_currentBannerIndex % _bannerAdUnitIds.length})');
+    // debugPrint('AdBannerService: Requesting banner with adUnitId: $adUnitId (index: ${_currentBannerIndex % _bannerAdUnitIds.length})');
     
     // Переходим к следующему adUnitId для следующего запроса
     _currentBannerIndex++;
     
     try {
-      final banner = await _createBanner(adUnitId);
+      final banner = _createBanner(adUnitId);
       _totalBannersCreated++;
-      debugPrint('AdBannerService: Created new banner with adUnitId: $adUnitId');
+      // debugPrint('AdBannerService: Created new banner with adUnitId: $adUnitId');
       _emitStats();
       return banner;
     } catch (e) {
-      debugPrint('AdBannerService: Failed to create banner: $e');
+      // debugPrint('AdBannerService: Failed to create banner: $e');
       return null;
     }
+  }
+  
+  /// Создание BannerAd с round-robin и возврат BannerAd (не виджета)
+  BannerAd createBannerAd() {
+    final banner = getBanner();
+    if (banner == null) {
+      throw StateError('Failed to create banner ad');
+    }
+    return banner;
   }
     
   /// Создание виджета баннера с автоматическим управлением
   Widget createBannerWidget() {
-    return FutureBuilder<BannerAd?>(
-      future: getBanner(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const SizedBox(
-            height: 50, // Ожидаемая высота баннера
-            child: Center(
-              child: CircularProgressIndicator(),
-            ),
-          );
-        } else if (snapshot.hasError) {
-          // Если произошла ошибка при загрузке баннера, отображаем пустой контейнер на месте баннера,
-          // чтобы не нарушать разметку.
-          return const SizedBox.shrink(); // Или можно показать запасной виджет
-        } else if (snapshot.hasData && snapshot.data != null) {
-          return BannerWidget(bannerAd: snapshot.data!);
-        } else {
-          // Если данных нет (например getBanner вернул null), также показываем пустой контейнер.
-          return const SizedBox.shrink();
-        }
-      },
-    );
+    final banner = getBanner();
+    if (banner == null) {
+      return const SizedBox.shrink();
+    }
+    return BannerWidget(bannerAd: banner);
   }
 
   /// Принудительная очистка всех ресурсов
   void dispose() {
-    debugPrint('AdBannerService: Disposing all resources...');
+    // debugPrint('AdBannerService: Disposing all resources...');
     
     _isInitialized = false;
     _statsController.close();
     
-    debugPrint('AdBannerService: All resources disposed');
+    // debugPrint('AdBannerService: All resources disposed');
   }
 
   /// Отправка статистики
@@ -184,6 +213,61 @@ class AdBannerService {
 
   
 
+  /// Показ interstitial ad после завершения уровня
+  Future<void> showInterstitialAd({
+    required BuildContext context,
+    Function()? onAdCompleted,
+    Function()? onAdDismissed,
+  }) async {
+    if (!_isInitialized) {
+      debugPrint('[InterstitialAd] Сервис не инициализирован');
+      return;
+    }
+    
+    debugPrint('[InterstitialAd] Начало загрузки рекламы...');
+    
+    InterstitialAd? ad;
+    
+    try {
+      // Создаем InterstitialAdLoader (синхронный конструктор в SDK 8.x)
+      final interstitialAdLoader = InterstitialAdLoader();
+      
+      // Загружаем рекламу — loadAd возвращает Future<InterstitialAd> напрямую
+      debugPrint('[InterstitialAd] Запрос загрузки рекламы с adUnitId: $_interstitialAdUnitId');
+      ad = await interstitialAdLoader.loadAd(
+        adRequest: AdRequest(adUnitId: _interstitialAdUnitId),
+      );
+      
+      debugPrint('[InterstitialAd] Реклама успешно загружена');
+      
+      // Устанавливаем слушатель событий до показа
+      await ad.setAdEventListener(
+        eventListener: InterstitialAdEventListener(
+          onAdDismissed: () {
+            debugPrint('[InterstitialAd] Реклама закрыта пользователем');
+            onAdDismissed?.call();
+            onAdCompleted?.call();
+            ad?.destroy();
+          },
+          onAdFailedToShow: (error) {
+            debugPrint('[InterstitialAd] Ошибка показа рекламы: $error');
+            ad?.destroy();
+          },
+        ),
+      );
+      
+      debugPrint('[InterstitialAd] Показ рекламы...');
+      await ad.show();
+      
+      debugPrint('[InterstitialAd] Межстраничная реклама показана');
+    } on AdRequestError catch (error) {
+      debugPrint('[InterstitialAd] Ошибка загрузки рекламы: $error');
+    } catch (e, stackTrace) {
+      debugPrint('[InterstitialAd] Исключение при показе рекламы: $e');
+      debugPrint('[InterstitialAd] StackTrace: $stackTrace');
+    }
+  }
+
   /// Показ rewarded ad с загрузкой рекламы на лету
   Future<Reward?> showRewardedAd({
     required BuildContext context,
@@ -193,115 +277,138 @@ class AdBannerService {
     Function()? onAdClicked,
   }) async {
     if (!_isInitialized) {
-      debugPrint('AdBannerService: Service not initialized. Call initialize() first.');
+      debugPrint('AdBannerService: Ошибка! Сервис не инициализирован. Call initialize() first.');
+      if (context.mounted) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Ошибка рекламы'),
+              content: const Text('Сервис рекламы не инициализирован. Перезапустите приложение.'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Понятно'),
+                ),
+              ],
+            );
+          },
+        );
+      }
       return null;
     }
     
-    debugPrint('AdBannerService: Starting to load RewardedAd for display...');
+    debugPrint('[RewardedAd] Начало загрузки рекламы...');
     
     RewardedAd? ad;
-    bool adLoaded = false;
     
     try {
-      // Создаем RewardedAdLoader на лету
-      final rewardedAdLoader = await RewardedAdLoader.create(
-        onAdLoaded: (loadedAd) {
-          ad = loadedAd;
-          adLoaded = true;
-          debugPrint('AdBannerService: RewardedAd loaded successfully for display');
-        },
-        onAdFailedToLoad: (error) {
-          debugPrint('AdBannerService: Failed to load RewardedAd: $error');
-          adLoaded = false;
-        },
+      // Создаем RewardedAdLoader (синхронный конструктор в SDK 8.x)
+      final rewardedAdLoader = RewardedAdLoader();
+      
+      // Загружаем рекламу — loadAd возвращает Future<RewardedAd> напрямую
+      debugPrint('[RewardedAd] Запрос загрузки рекламы с adUnitId: $_rewardedAdUnitId');
+      ad = await rewardedAdLoader.loadAd(
+        adRequest: AdRequest(adUnitId: _rewardedAdUnitId),
       );
       
-      // Загружаем рекламу
-      await rewardedAdLoader.loadAd(
-        adRequestConfiguration: AdRequestConfiguration(adUnitId: _rewardedAdUnitId),
-      );
-      
-      // Ждем загрузки с таймаутом
-      int attempts = 0;
-      const maxAttempts = 100; // Максимум 5 секунд (50 * 100ms)
-      
-      while (!adLoaded && attempts < maxAttempts) {
-        await Future.delayed(const Duration(milliseconds: 100));
-        attempts++;
-      }
-      
-      if (!adLoaded || ad == null) {
-        debugPrint('AdBannerService: RewardedAd failed to load within timeout');
-        
-        // Показываем диалог с ошибкой
-        if (context.mounted) {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: const Text('Реклама недоступна'),
-                content: const Text(
-                  'Нет рекламы для показа: проверьте соединение с интернетом или отключите блокировщик рекламы'
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Понятно'),
-                  ),
-                ],
-              );
-            },
-          );
-        }
-        
-        return null;
-      }
+      debugPrint('[RewardedAd] Реклама успешно загружена');
       
       _rewardedAdShownCount++;
+      debugPrint('[RewardedAd] Показ рекламы...');
       onAdShown?.call();
       
-      // Устанавливаем слушатель событий
-      ad!.setAdEventListener(
+      // Используем Completer для ожидания результата с таймаутом
+      final completer = Completer<Reward?>();
+      late Timer timeoutTimer;
+      
+      // Таймаут 60 секунд (реклама может длиться долго)
+      timeoutTimer = Timer(const Duration(seconds: 60), () {
+        if (!completer.isCompleted) {
+          debugPrint('[RewardedAd] Таймаут ожидания закрытия рекламы');
+          completer.complete(null);
+        }
+      });
+      
+      // Устанавливаем слушатель событий до показа
+      await ad.setAdEventListener(
         eventListener: RewardedAdEventListener(
           onAdShown: () {
-            debugPrint('AdBannerService: RewardedAd shown');
+            debugPrint('[RewardedAd] Реклама показана на экране');
           },
           onAdFailedToShow: (error) {
-            debugPrint('AdBannerService: RewardedAd failed to show: $error');
-            ad!.destroy();
+            debugPrint('[RewardedAd] Ошибка показа рекламы: $error');
+            timeoutTimer.cancel();
+            if (!completer.isCompleted) {
+              completer.complete(null);
+            }
+            ad?.destroy();
           },
           onAdClicked: () {
+            debugPrint('[RewardedAd] Клик по рекламе');
             onAdClicked?.call();
-            debugPrint('AdBannerService: RewardedAd clicked');
           },
           onAdDismissed: () {
-            debugPrint('AdBannerService: RewardedAd dismissed');
-            ad!.destroy();
+            debugPrint('[RewardedAd] Реклама закрыта пользователем (onAdDismissed)');
+            timeoutTimer.cancel();
+            if (!completer.isCompleted) {
+              completer.complete(null);
+            }
             onAdDismissed?.call();
+            ad?.destroy();
           },
           onAdImpression: (impressionData) {
-            debugPrint('AdBannerService: RewardedAd impression recorded');
+            debugPrint('[RewardedAd] Зарегистрирован показ рекламы (impression)');
           },
           onRewarded: (Reward reward) {
             _rewardedAdCompletedCount++;
+            debugPrint('[RewardedAd] Награда выдана: ${reward.amount} ${reward.type}');
             onAdCompleted?.call(reward);
-            debugPrint('AdBannerService: RewardedAd completed - reward granted: ${reward.amount} ${reward.type}');
+            // Не завершаем completer здесь — ждём onAdDismissed
           },
         ),
       );
       
       // Показываем рекламу
-      await ad!.show();
+      debugPrint('[RewardedAd] Вызов show()...');
+      await ad.show();
       
       // Ждем завершения просмотра
-      final reward = await ad!.waitForDismiss();
+      debugPrint('[RewardedAd] Ожидание завершения просмотра...');
+      final reward = await completer.future;
       
-      // Уничтожаем ad после показа
-      ad!.destroy();
+      timeoutTimer.cancel();
+      debugPrint('[RewardedAd] Просмотр завершён. Reward: $reward');
       
       return reward;
-    } catch (e) {
-      debugPrint('AdBannerService: Error showing RewardedAd: $e');
+    } on AdRequestError catch (error) {
+      debugPrint('[RewardedAd] Ошибка загрузки рекламы: $error');
+      
+      // Показываем диалог с ошибкой
+      if (context.mounted) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Реклама недоступна'),
+              content: const Text(
+                'Нет рекламы для показа: проверьте соединение с интернетом или отключите блокировщик рекламы'
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Понятно'),
+                ),
+              ],
+            );
+          },
+        );
+      }
+      
+      return null;
+    } catch (e, stackTrace) {
+      debugPrint('[RewardedAd] Исключение при показе рекламы: $e');
+      debugPrint('[RewardedAd] StackTrace: $stackTrace');
       
       // Показываем диалог с ошибкой при исключении
       if (context.mounted) {
@@ -344,7 +451,7 @@ AdBannerService Report:
 }
 
 /// Виджет баннера
-class BannerWidget extends StatefulWidget {
+class BannerWidget extends StatelessWidget {
   final BannerAd bannerAd;
   
   const BannerWidget({
@@ -353,51 +460,14 @@ class BannerWidget extends StatefulWidget {
   });
 
   @override
-  State<BannerWidget> createState() => _BannerWidgetState();
-}
-
-class _BannerWidgetState extends State<BannerWidget> {
-  @override
-  void initState() {
-    super.initState();
-    debugPrint('BannerWidget: Initialized');
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    debugPrint('BannerWidget: Disposed');
-  }
-
-  @override
- Widget build(BuildContext context) {
-    // Оборачиваем AdWidget в IgnorePointer, чтобы избежать случайных нажатий,
-    // если это нежелательное поведение для текущего сценария.
-    return IgnorePointer(
-      ignoring: true, // Всегда игнорировать жесты
-      child: SizedBox( 
-        // Yandex sticky баннер обычно имеет высоту 50px
-        height: 50, // Задаем ожидаемую высоту, чтобы зарезервировать место, если нужно
-        child: _createAdWidget(),
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: IgnorePointer(
+        ignoring: true, // Всегда игнорировать жесты
+        child: AdWidget(bannerAd: bannerAd),
       ),
     );
-  }
-
-  Widget _createAdWidget() {
-    // Используем рефлексию для доступа к AdWidget, если он доступен
-    try {
-      return AdWidget(bannerAd: widget.bannerAd);
-    } catch (e) {
-      debugPrint('BannerWidget: AdWidget not available, using placeholder: $e');
-      return Container(
-        height: 50, // Соответствует ожидаемому размеру баннера
-        // width: double.infinity,
-        color: Colors.grey[300],
-        child: const Center(
-          child: Text('Ad loading...'),
-        ),
-      );
-    }
   }
 }
 
